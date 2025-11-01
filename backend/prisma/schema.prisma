@@ -1,0 +1,182 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Roles Enum
+enum RoleName {
+  ADMIN
+  ATENDENTE
+  PRODUÇÃO
+  CAIXA
+}
+
+// User Status
+enum UserStatus {
+  ONLINE
+  OFFLINE
+  AUSENTE
+}
+
+// Account Status
+enum AccountStatus {
+  ATIVO
+  SUSPENSO
+  BLOQUEADO
+}
+
+// Document Type
+enum DocType {
+  CPF
+  CNPJ
+  RG
+}
+
+// Order Status
+enum OrderStatus {
+  PENDENTE
+  CONFIRMADO
+  EM_PRODUÇÃO
+  PRONTO
+  ENTREGUE
+  CANCELADO
+}
+
+// Payment Method
+enum PaymentMethod {
+  DINHEIRO
+  DEBITO
+  CREDITO
+  PIX
+}
+
+// User Model
+model User {
+  userId       String        @id @default(uuid())
+  username     String        @unique @db.VarChar(50)
+  firstName    String        @db.VarChar(255)
+  lastName     String?       @db.VarChar(255)
+  email        String        @unique @db.VarChar(255)
+  passwordHash String        @db.VarChar(255)
+  profileImage String?       @db.VarChar(512)
+  phone        String?       @db.VarChar(25)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  roleId       String
+  role         Role          @relation(fields: [roleId], references: [roleId])
+  statusUser   UserStatus    @default(OFFLINE)
+  statusAccount AccountStatus @default(ATIVO)
+  preferences  Json?         @default("{}")
+  emailVerified Boolean      @default(false)
+  deletedAt    DateTime?
+  failsLogin   Int           @default(0)
+  lastLogin    DateTime?
+  lastDevice   String?
+  currentDevice String?
+  
+  createdClients Consumer[] @relation("CreatedBy")
+  orders        Order[]
+  
+  @@map("users")
+}
+
+// Role Model
+model Role {
+  roleId           String   @id @default(uuid())
+  roleName         RoleName @unique
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  rolePermissions  Json     @default("{}")
+  
+  users User[]
+  
+  @@map("roles")
+}
+
+// Consumer Model
+model Consumer {
+  consumerId   String    @id @default(uuid())
+  firstName    String    @db.VarChar(255)
+  lastName     String?   @db.VarChar(255)
+  profileImage String?   @db.VarChar(512)
+  email        String?   @db.VarChar(255)
+  address      String?   @db.Text
+  zipcode      String?   @db.VarChar(15)
+  phone        String?   @db.VarChar(25)
+  docNumber    String?   @db.VarChar(50)
+  docType      DocType?
+  notes        String?   @db.Text
+  createdAt    DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById  String
+  createdBy    User      @relation("CreatedBy", fields: [createdById], references: [userId])
+  
+  orders       Order[]
+  
+  @@map("consumers")
+}
+
+// Order Model
+model Order {
+  orderId         String        @id @default(uuid())
+  consumerId      String
+  consumer        Consumer      @relation(fields: [consumerId], references: [consumerId])
+  createdById     String
+  createdBy       User          @relation(fields: [createdById], references: [userId])
+  orderDate       DateTime      @default(now())
+  scheduledDate   DateTime?
+  orderValue      Decimal       @db.Decimal(10, 2)
+  status          OrderStatus   @default(PENDENTE)
+  paymentMethod   PaymentMethod?
+  notes           String?       @db.Text
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  items           OrderItem[]
+  
+  @@map("orders")
+}
+
+// Order Item Model
+model OrderItem {
+  orderItemId String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [orderId])
+  productId   String
+  product     Product  @relation(fields: [productId], references: [productId])
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  subtotal    Decimal  @db.Decimal(10, 2)
+  
+  @@map("order_items")
+}
+
+// Product Model
+model Product {
+  productId      String    @id @default(uuid())
+  name            String    @db.VarChar(255)
+  description     String?   @db.Text
+  price           Decimal   @db.Decimal(10, 2)
+  category        String?   @db.VarChar(100)
+  barcode         String?   @db.VarChar(100)
+  stock           Int       @default(0)
+  minStock        Int       @default(0)
+  image           String?   @db.VarChar(512)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  active          Boolean   @default(true)
+  
+  orderItems      OrderItem[]
+  
+  @@map("products")
+}

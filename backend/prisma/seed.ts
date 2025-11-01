@@ -1,0 +1,70 @@
+import { PrismaClient, RoleName } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  console.log('🚀 Iniciando seed do banco de dados...');
+
+  // Criar roles
+  const roles = [
+    { roleName: RoleName.ADMIN },
+    { roleName: RoleName.ATENDENTE },
+    { roleName: RoleName.PRODUÇÃO },
+    { roleName: RoleName.CAIXA },
+  ];
+
+  console.log('📝 Criando roles...');
+  for (const role of roles) {
+    await prisma.role.upsert({
+      where: { roleName: role.roleName },
+      update: {},
+      create: role,
+    });
+    console.log(`✅ Role ${role.roleName} criada`);
+  }
+
+  // Criar usuário admin
+  console.log('👤 Criando usuário admin...');
+  const adminRole = await prisma.role.findUnique({
+    where: { roleName: RoleName.ADMIN },
+  });
+
+  if (adminRole) {
+    const saltRounds = parseInt(process.env.BCRYPT_ROUNDS || '12');
+    const passwordHash = await bcrypt.hash('ADMIN123', saltRounds);
+
+    const adminUser = await prisma.user.upsert({
+      where: { username: 'ADMIN' },
+      update: {},
+      create: {
+        username: 'ADMIN',
+        firstName: 'Administrador',
+        lastName: 'Sistema',
+        email: 'admin@bombocado.com',
+        passwordHash,
+        roleId: adminRole.roleId,
+        statusUser: 'OFFLINE',
+        statusAccount: 'ATIVO',
+        emailVerified: true,
+      },
+    });
+
+    console.log('✅ Usuário ADMIN criado com sucesso!');
+    console.log('📋 Credenciais:');
+    console.log('   Login: ADMIN');
+    console.log('   Senha: ADMIN123');
+    console.log('   Email: admin@bombocado.com');
+  }
+
+  console.log('🎉 Seed concluído com sucesso!');
+}
+
+main()
+  .catch((e) => {
+    console.error('❌ Erro durante o seed:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

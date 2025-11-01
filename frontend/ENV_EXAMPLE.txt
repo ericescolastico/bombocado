@@ -1,0 +1,5 @@
+# Copie este arquivo para .env.local e configure
+
+# URL da API do backend
+NEXT_PUBLIC_API_URL=http://localhost:3000
+
