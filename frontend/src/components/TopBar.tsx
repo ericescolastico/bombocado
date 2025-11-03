@@ -5,19 +5,87 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePageTitleContext } from '@/contexts/PageTitleContext';
 import { FontAwesomeIcon } from '@/lib/fontawesome';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { Breadcrumbs, BreadcrumbItem } from '@heroui/react';
 
 export function TopBar() {
   const { logout } = useAuth();
   const { title } = usePageTitleContext();
+  const pathname = usePathname();
+
+  // Função para gerar breadcrumbs baseado no pathname
+  const generateBreadcrumbs = (): Array<{ key: string; href: string; label: string; isLast: boolean }> => {
+    if (!pathname) return [];
+
+    const segments = pathname.split('/').filter(Boolean);
+    
+    // Mapeamento de rotas para nomes amigáveis
+    const routeNames: Record<string, string> = {
+      'dashboard': 'Dashboard',
+      'perfil': 'Perfil',
+      'pedidos': 'Pedidos',
+      'produtos': 'Produtos',
+      'clientes': 'Clientes',
+      'editar-informacoes': 'Editar Informações',
+      'novo': 'Novo',
+      'editar': 'Editar',
+    };
+
+    const breadcrumbs: Array<{ key: string; href: string; label: string; isLast: boolean }> = [];
+    let currentPath = '';
+
+    segments.forEach((segment, index) => {
+      currentPath += `/${segment}`;
+      const isLast = index === segments.length - 1;
+      
+      breadcrumbs.push({
+        key: segment,
+        href: currentPath,
+        label: routeNames[segment] || segment.charAt(0).toUpperCase() + segment.slice(1),
+        isLast,
+      });
+    });
+
+    return breadcrumbs;
+  };
+
+  const breadcrumbItems = generateBreadcrumbs();
 
   return (
-    <header className="sticky top-0 z-30 h-14 flex items-center justify-between px-3 bg-transparent">
-      {/* Título da página alinhado à esquerda */}
-      <div className="flex items-center flex-1 min-w-0 pl-4">
+    <header className="sticky top-0 z-30 min-h-14 flex items-center justify-between px-3 bg-transparent py-1">
+      {/* Título da página e breadcrumb alinhados à esquerda */}
+      <div className="flex flex-col items-start flex-1 min-w-0 pl-4">
         {title && (
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 truncate">
             {title}
           </h1>
+        )}
+        {breadcrumbItems.length > 0 && (
+          <Breadcrumbs
+            size="sm"
+            variant="light"
+            color="foreground"
+            underline="none"
+            classNames={{
+              base: "mt-0.5",
+              list: "gap-1",
+              separator: "text-neutral-400 dark:text-neutral-500",
+            }}
+          >
+            {breadcrumbItems.map((item) => (
+              <BreadcrumbItem
+                key={item.key}
+                href={item.isLast ? undefined : item.href}
+                isCurrent={item.isLast}
+                classNames={{
+                  base: "text-xs",
+                  item: "text-xs text-neutral-500 dark:text-neutral-400",
+                }}
+              >
+                {item.label}
+              </BreadcrumbItem>
+            ))}
+          </Breadcrumbs>
         )}
       </div>
       

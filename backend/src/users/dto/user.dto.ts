@@ -90,3 +90,26 @@ export class UserResponseDto {
   lastLogin?: Date;
   failsLogin: number;
 }
+
+export class UserWithPresenceDto {
+  userId: string;
+  username: string;
+  firstName: string;
+  lastName?: string;
+  email: string;
+  phone?: string;
+  profileImage?: string;
+  role: {
+    roleId: string;
+    roleName: RoleName;
+  };
+  statusUser: UserStatus;
+  statusAccount: AccountStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  lastLogin?: Date;
+  failsLogin: number;
+  online: boolean;
+  lastSeen: string | null;
+  currentSessionSeconds?: number; // Tempo da sessão atual em segundos
+}

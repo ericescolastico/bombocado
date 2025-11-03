@@ -16,20 +16,40 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/page.js"
     ],
-    "/perfil/page": [
+    "/usuarios/painel-controle/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/perfil/page.js"
+      "static/chunks/app/usuarios/painel-controle/page.js"
     ],
     "/usuarios/log-atividades/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/usuarios/log-atividades/page.js"
     ],
-    "/_not-found/page": [
+    "/perfil/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/perfil/page.js"
+    ],
+    "/perfil/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/perfil/layout.js"
+    ],
+    "/perfil/editar-informacoes/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/perfil/editar-informacoes/page.js"
+    ],
+    "/perfil/log-atividades/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/perfil/log-atividades/page.js"
+    ],
+    "/perfil/estatisticas/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/perfil/estatisticas/page.js"
     ]
   }
 }

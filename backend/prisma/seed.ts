@@ -1,27 +1,33 @@
 import { PrismaClient, RoleName } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { DEFAULT_ROLE_PERMISSIONS } from '../src/auth/permissions';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🚀 Iniciando seed do banco de dados...');
 
-  // Criar roles
+  // Criar roles com permissões
   const roles = [
-    { roleName: RoleName.ADMIN },
-    { roleName: RoleName.ATENDENTE },
-    { roleName: RoleName.PRODUÇÃO },
-    { roleName: RoleName.CAIXA },
+    RoleName.ADMIN,
+    RoleName.ATENDENTE,
+    RoleName.PRODUÇÃO,
+    RoleName.CAIXA,
   ];
 
-  console.log('📝 Criando roles...');
-  for (const role of roles) {
+  console.log('📝 Criando roles com permissões...');
+  for (const roleName of roles) {
     await prisma.role.upsert({
-      where: { roleName: role.roleName },
-      update: {},
-      create: role,
+      where: { roleName },
+      update: {
+        rolePermissions: DEFAULT_ROLE_PERMISSIONS[roleName] as any,
+      },
+      create: {
+        roleName,
+        rolePermissions: DEFAULT_ROLE_PERMISSIONS[roleName] as any,
+      },
     });
-    console.log(`✅ Role ${role.roleName} criada`);
+    console.log(`✅ Role ${roleName} criada/atualizada com permissões`);
   }
 
   // Criar usuário admin

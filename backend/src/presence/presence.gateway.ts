@@ -16,6 +16,7 @@ import type { AuthenticatedSocket } from './presence.guard';
 import { PRESENCE_EVENTS } from './presence.events';
 import { RedisService } from '../infra/redis/redis.service';
 import { PresenceUpdatePayload } from './presence.types';
+import { SessionTimeService } from '../session-time/session-time.service';
 
 @WebSocketGateway({
   namespace: '/presence',
@@ -36,6 +37,7 @@ export class PresenceGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     private presenceService: PresenceService,
     private redisService: RedisService,
     private jwtService: JwtService,
+    private sessionTimeService: SessionTimeService,
   ) {}
 
   afterInit(server: Server) {
@@ -106,9 +108,34 @@ export class PresenceGateway implements OnGatewayInit, OnGatewayConnection, OnGa
       // Join room do usuário
       if (client.userId) {
         await client.join(`user:${client.userId}`);
+        
+        // Registrar presença imediatamente ao conectar
+        // Isso garante que o usuário apareça como online logo após a conexão
+        try {
+          const beatResult = await this.presenceService.beat(client.userId);
+          
+          // Se é um novo "online", iniciar sessão de tempo e emitir update
+          if (beatResult.isNewOnline) {
+            try {
+              await this.sessionTimeService.startSession(client.userId);
+            } catch (error) {
+              this.logger.warn(`Erro ao iniciar sessão de tempo para ${client.userId}: ${error}`);
+            }
+
+            const update: PresenceUpdatePayload = {
+              userId: client.userId,
+              online: true,
+              lastSeen: beatResult.lastSeen,
+            };
+            this.server.emit(PRESENCE_EVENTS.UPDATE, update);
+            this.logger.log(`User ${client.userId} came online (connection)`);
+          }
+        } catch (error) {
+          this.logger.error(`Error registering presence for ${client.userId} on connection: ${error}`);
+        }
       }
 
-      // Enviar snapshot inicial
+      // Enviar snapshot inicial (agora o usuário já deve estar registrado no Redis)
       await this.sendSnapshot(client);
     } catch (error) {
       this.logger.warn(`Connection rejected: invalid token (socket: ${client.id})`);
@@ -141,8 +168,15 @@ export class PresenceGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     try {
       const result = await this.presenceService.beat(client.userId);
       
-      // Se é um novo "online", emitir update globalmente
+      // Se é um novo "online", iniciar sessão de tempo e emitir update
       if (result.isNewOnline) {
+        // Iniciar sessão de tempo online
+        try {
+          await this.sessionTimeService.startSession(client.userId);
+        } catch (error) {
+          this.logger.warn(`Erro ao iniciar sessão de tempo para ${client.userId}: ${error}`);
+        }
+
         const update: PresenceUpdatePayload = {
           userId: client.userId,
           online: true,
@@ -150,6 +184,13 @@ export class PresenceGateway implements OnGatewayInit, OnGatewayConnection, OnGa
         };
         this.server.emit(PRESENCE_EVENTS.UPDATE, update);
         this.logger.log(`User ${client.userId} came online (heartbeat)`);
+      } else {
+        // Atualizar sessão ativa periodicamente
+        try {
+          await this.sessionTimeService.updateActiveSession(client.userId);
+        } catch (error) {
+          this.logger.warn(`Erro ao atualizar sessão de tempo para ${client.userId}: ${error}`);
+        }
       }
     } catch (error) {
       this.logger.error(`Error processing heartbeat for ${client.userId}: ${error}`);

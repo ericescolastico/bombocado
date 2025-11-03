@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { ProtectedAdminRoute } from '@/components/ProtectedAdminRoute';
 import { AppShell } from '@/components/AppShell';
 import { api } from '@/lib/api';
 import { FontAwesomeIcon } from '@/lib/fontawesome';
@@ -289,11 +289,11 @@ function PageContent() {
 
 export default function UsuariosLogAtividadesPage() {
   return (
-    <ProtectedRoute>
+    <ProtectedAdminRoute>
       <AppShell>
         <PageContent />
       </AppShell>
-    </ProtectedRoute>
+    </ProtectedAdminRoute>
   );
 }
 

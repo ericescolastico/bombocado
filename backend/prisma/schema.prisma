@@ -60,6 +60,7 @@ model User {
   currentDevice String?
 
   auditLogs      AuditLog[]
+  sessionTimes   UserSessionTime[]
 
   @@map("users")
 }
@@ -94,4 +95,22 @@ model AuditLog {
   @@index([event])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// User Session Time Model - Rastreia tempo online dos usuários
+model UserSessionTime {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  sessionDate DateTime @db.Date // Data da sessão (sem hora)
+  startTime   DateTime // Quando a sessão começou
+  endTime     DateTime? // Quando a sessão terminou (null se ainda ativa)
+  durationSeconds Int  @default(0) // Duração em segundos (calculada)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([sessionDate])
+  @@index([userId, sessionDate])
+  @@map("user_session_times")
 }

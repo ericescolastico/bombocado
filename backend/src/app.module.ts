@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { AuditModule } from './audit/audit.module';
 import { RedisModule } from './infra/redis/redis.module';
 import { PresenceModule } from './presence/presence.module';
+import { SessionTimeModule } from './session-time/session-time.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { PresenceModule } from './presence/presence.module';
     UsersModule,
     AuditModule,
     PresenceModule,
+    SessionTimeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

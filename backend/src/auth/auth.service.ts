@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
+import { SessionTimeService } from '../session-time/session-time.service';
 import * as bcrypt from 'bcrypt';
 import { LoginDto, RegisterDto, AuthResponseDto } from './dto/auth.dto';
 
@@ -9,6 +10,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private sessionTimeService: SessionTimeService,
   ) {}
 
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
@@ -155,6 +157,14 @@ export class AuthService {
   }
 
   async logout(userId: string): Promise<void> {
+    // Finalizar sessão de tempo online
+    try {
+      await this.sessionTimeService.endSession(userId);
+    } catch (error) {
+      // Log mas não falhar o logout se houver erro ao finalizar sessão
+      console.error(`Erro ao finalizar sessão de tempo para ${userId}:`, error);
+    }
+
     await this.prisma.user.update({
       where: { userId },
       data: { statusUser: 'OFFLINE' },

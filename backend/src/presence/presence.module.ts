@@ -4,12 +4,14 @@ import { PresenceGateway } from './presence.gateway';
 import { PresenceService } from './presence.service';
 import { PresenceGuard } from './presence.guard';
 import { PresenceController } from './presence.controller';
+import { SessionTimeModule } from '../session-time/session-time.module';
 
 @Module({
   imports: [
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'default-secret',
     }),
+    SessionTimeModule,
   ],
   providers: [PresenceGateway, PresenceService, PresenceGuard],
   controllers: [PresenceController],

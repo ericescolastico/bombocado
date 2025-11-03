@@ -89,7 +89,31 @@ export class PresenceService {
       const getResult = results[i * 2 + 1];
       
       const online = existsResult[1] === 1;
-      const lastSeen = online && getResult[1] ? String(getResult[1]) : '';
+      let lastSeen = '';
+      
+      this.logger.debug(`[PresenceService] getSnapshot for ${userIds[i]}: exists=${existsResult[1]}, online=${online}, getResult=${getResult ? getResult[1] : 'null'}`);
+      
+      // Se está online, sempre tentar obter o lastSeen
+      if (online) {
+        if (getResult && getResult[1]) {
+          lastSeen = String(getResult[1]);
+          this.logger.debug(`[PresenceService] Got lastSeen from pipeline for ${userIds[i]}: ${lastSeen}`);
+        } else {
+          // Se não veio no pipeline mas está online, buscar diretamente do Redis
+          // Isso pode acontecer em casos raros de race condition
+          try {
+            const key = `${PRESENCE_KEY_PREFIX}${userIds[i]}`;
+            const directValue = await client.get(key);
+            lastSeen = directValue || '';
+            this.logger.debug(`[PresenceService] Got lastSeen from direct Redis query for ${userIds[i]}: ${lastSeen}`);
+          } catch (error) {
+            this.logger.warn(`Failed to get lastSeen for ${userIds[i]}: ${error}`);
+            lastSeen = '';
+          }
+        }
+      } else {
+        this.logger.debug(`[PresenceService] User ${userIds[i]} is offline`);
+      }
       
       entries.push({
         userId: userIds[i],
@@ -97,6 +121,9 @@ export class PresenceService {
         lastSeen,
       });
     }
+    
+    const entriesSummary = entries.map(e => ({ userId: e.userId, online: e.online, lastSeen: e.lastSeen }));
+    this.logger.debug(`[PresenceService] Returning ${entries.length} entries: ${JSON.stringify(entriesSummary)}`);
 
     return entries;
   }

@@ -1,11 +1,17 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto, UpdateUserDto, ChangePasswordDto, UserResponseDto } from './dto/user.dto';
+import { PresenceService } from '../presence/presence.service';
+import { SessionTimeService } from '../session-time/session-time.service';
+import { CreateUserDto, UpdateUserDto, ChangePasswordDto, UserResponseDto, UserWithPresenceDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private presenceService: PresenceService,
+    private sessionTimeService: SessionTimeService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const { username, firstName, lastName, email, password, phone, roleName } = createUserDto;
@@ -199,6 +205,89 @@ export class UsersService {
         roleName: 'asc',
       },
     });
+  }
+
+  async findAllWithPresence(): Promise<UserWithPresenceDto[]> {
+    const users = await this.prisma.user.findMany({
+      where: {
+        deletedAt: null,
+      },
+      include: {
+        role: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    // Buscar presença de todos os usuários
+    const userIds = users.map(u => u.userId);
+    const presenceEntries = await this.presenceService.getSnapshot(userIds);
+    
+    // Log para debug
+    console.log('[UsersService] Presence entries from Redis:', JSON.stringify(presenceEntries, null, 2));
+    
+    // Criar mapa de presença para lookup rápido
+    const presenceMap = new Map<string, { online: boolean; lastSeen: string | null }>();
+    presenceEntries.forEach(entry => {
+      // Garantir que online seja um booleano
+      const online = Boolean(entry.online);
+      
+      // Normalizar lastSeen: strings vazias devem ser null
+      let lastSeen: string | null = null;
+      if (entry.lastSeen && typeof entry.lastSeen === 'string' && entry.lastSeen.trim() !== '') {
+        lastSeen = entry.lastSeen.trim();
+      } else if (online) {
+        // Se está online mas não temos lastSeen válido, usar timestamp atual
+        // Isso garante que sempre teremos um valor quando online
+        lastSeen = new Date().toISOString();
+      }
+      
+      console.log(`[UsersService] User ${entry.userId}: online=${online}, lastSeen=${lastSeen}, entry.lastSeen=${entry.lastSeen}`);
+      
+      presenceMap.set(entry.userId, {
+        online,
+        lastSeen,
+      });
+    });
+
+    // Combinar dados de usuário com presença e tempo da sessão atual
+    const result = await Promise.all(
+      users.map(async (user) => {
+        const presence = presenceMap.get(user.userId);
+        const userResponse = this.mapUserToResponse(user);
+        
+        // Se não encontrou presença no mapa, usar valores padrão
+        const online = presence?.online ?? false;
+        const lastSeen = presence?.lastSeen ?? null;
+        
+        // Buscar tempo da sessão atual apenas se o usuário estiver online
+        let currentSessionSeconds: number | undefined = undefined;
+        if (online) {
+          try {
+            currentSessionSeconds = await this.sessionTimeService.getCurrentSessionTime(user.userId);
+          } catch (error) {
+            console.error(`[UsersService] Erro ao buscar tempo da sessão para ${user.userId}:`, error);
+            currentSessionSeconds = 0;
+          }
+        }
+        
+        const finalResult = {
+          ...userResponse,
+          online,
+          lastSeen,
+          currentSessionSeconds,
+        };
+        
+        console.log(`[UsersService] Final result for ${user.username}: online=${finalResult.online}, lastSeen=${finalResult.lastSeen}, currentSessionSeconds=${finalResult.currentSessionSeconds}`);
+        
+        return finalResult;
+      })
+    );
+    
+    console.log('[UsersService] Returning users with presence:', JSON.stringify(result.map(u => ({ userId: u.userId, username: u.username, online: u.online, lastSeen: u.lastSeen, currentSessionSeconds: u.currentSessionSeconds })), null, 2));
+    
+    return result;
   }
 
   private mapUserToResponse(user: any): UserResponseDto {

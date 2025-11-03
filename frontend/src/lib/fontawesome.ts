@@ -21,6 +21,11 @@ import {
   faCamera, // Câmera/Foto
   faChevronDown, // Dropdown
   faChevronUp, // Dropdown up
+  faSyncAlt, // Sincronizar/Atualizar
+  faTachometerAlt, // Dashboard/Tachômetro
+  faHistory, // Histórico
+  faRotateLeft, // Rotacionar/Voltar
+  faExclamationTriangle, // Aviso/Erro
 } from '@fortawesome/free-solid-svg-icons';
 
 // Adicionar ícones à biblioteca
@@ -43,6 +48,11 @@ library.add(
   faCamera,
   faChevronDown,
   faChevronUp,
+  faSyncAlt,
+  faTachometerAlt,
+  faHistory,
+  faRotateLeft,
+  faExclamationTriangle,
 );
 
 export { FontAwesomeIcon };

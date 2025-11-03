@@ -21,7 +21,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "node dist/prisma/seed.js"
+    "prisma:seed": "node dist/prisma/seed.js",
+    "update:permissions": "ts-node -r tsconfig-paths/register scripts/update-permissions.ts"
   },
   "dependencies": {
     "@nestjs/platform-socket.io": "^11.0.1",

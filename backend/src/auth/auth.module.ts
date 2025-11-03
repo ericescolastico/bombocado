@@ -5,11 +5,13 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { PrismaModule } from '../prisma/prisma.module';
+import { SessionTimeModule } from '../session-time/session-time.module';
 
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
+    SessionTimeModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'bombocado-super-secret-jwt-key-2024',
       signOptions: {

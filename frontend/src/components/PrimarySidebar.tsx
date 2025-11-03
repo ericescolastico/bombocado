@@ -169,7 +169,15 @@ export function PrimarySidebar({ collapsed, onToggle }: PrimarySidebarProps) {
 
       {/* Navegação */}
       <nav className="mt-4 flex-1 space-y-1 px-2">
-        {navItems.map((item) => {
+        {navItems
+          .filter((item) => {
+            // Filtrar item "usuarios" se o usuário não for ADMIN
+            if (item.id === 'usuarios' && user?.role !== 'ADMIN') {
+              return false;
+            }
+            return true;
+          })
+          .map((item) => {
           const isActive = isItemActive(item);
           const isExpanded = expandedItems.has(item.id);
           const hasChildren = item.children && item.children.length > 0;

@@ -14,8 +14,11 @@ import {
   Headers 
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto, UpdateUserDto, ChangePasswordDto, UserResponseDto } from './dto/user.dto';
+import { CreateUserDto, UpdateUserDto, ChangePasswordDto, UserResponseDto, UserWithPresenceDto } from './dto/user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { RoleName } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 
 interface AuthenticatedRequest extends Request {
@@ -23,7 +26,8 @@ interface AuthenticatedRequest extends Request {
 }
 
 @Controller('users')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles(RoleName.ADMIN)
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
@@ -39,6 +43,11 @@ export class UsersController {
   @Get()
   async findAll(): Promise<UserResponseDto[]> {
     return this.usersService.findAll();
+  }
+
+  @Get('with-presence')
+  async findAllWithPresence(): Promise<UserWithPresenceDto[]> {
+    return this.usersService.findAllWithPresence();
   }
 
   @Get('roles')
