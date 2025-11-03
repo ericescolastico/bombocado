@@ -1,0 +1,104 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bombocado-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bombocado
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - appnet
+
+  redis:
+    image: redis:7-alpine
+    container_name: bombocado-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - appnet
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: bombocado-backend:latest
+    container_name: bombocado-backend
+    env_file:
+      - ./backend/.env
+    environment:
+      # Override para rodar em Docker (usa nomes dos serviços)
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/bombocado?schema=public
+      REDIS_HOST: redis
+      PORT: 3000
+      CORS_ORIGIN: http://localhost:3001
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    networks:
+      - appnet
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Build-time env para Next.js
+        NEXT_PUBLIC_API_URL: http://localhost:3000
+    container_name: bombocado-frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+      NODE_ENV: production
+    depends_on:
+      - backend
+    ports:
+      - "3001:3001"
+    networks:
+      - appnet
+
+  # Serviço opcional para popular o banco (executar manualmente quando quiser)
+  seed:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bombocado-seed
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/bombocado?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["sh", "-c", "/wait-for-postgres.sh postgres 5432 && npm run prisma:seed"]
+    networks:
+      - appnet
+    restart: "no"
+    profiles:
+      - seed
+
+volumes:
+  postgres_data:
+
+networks:
+  appnet:
+    driver: bridge
+
+

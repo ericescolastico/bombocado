@@ -7,6 +7,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AuditModule } from './audit/audit.module';
+import { RedisModule } from './infra/redis/redis.module';
+import { PresenceModule } from './presence/presence.module';
 
 @Module({
   imports: [
@@ -19,18 +21,27 @@ import { AuditModule } from './audit/audit.module';
         redis: {
           host: process.env.REDIS_HOST || 'localhost',
           port: parseInt(process.env.REDIS_PORT || '6379', 10),
+          password: process.env.REDIS_PASSWORD || undefined,
           maxRetriesPerRequest: null,
           enableReadyCheck: false,
-          enableOfflineQueue: false,
-          retryStrategy: () => null,
-          lazyConnect: true,
+          enableOfflineQueue: true,
+          retryStrategy: (times: number) => {
+            if (times > 10) {
+              return null; // Para de tentar após 10 tentativas
+            }
+            const delay = Math.min(times * 50, 2000);
+            return delay;
+          },
+          lazyConnect: false,
         },
       }),
     }),
     PrismaModule,
+    RedisModule,
     AuthModule,
     UsersModule,
     AuditModule,
+    PresenceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

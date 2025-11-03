@@ -182,7 +182,7 @@ export function PrimarySidebar({ collapsed, onToggle }: PrimarySidebarProps) {
               </button>
               
               {/* Subitens */}
-              {hasChildren && !collapsed && isExpanded && (
+              {hasChildren && !collapsed && isExpanded && item.children && (
                 <div className="ml-4 space-y-1 border-l-2 border-neutral-200 dark:border-neutral-800 pl-2">
                   {item.children.map((child) => {
                     const isChildActive = pathname === child.path;

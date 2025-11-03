@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { AuditService } from './audit.service';
+import { AuditProcessor } from './audit.processor';
 import { AuditController } from './audit.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 
@@ -13,7 +14,7 @@ import { PrismaModule } from '../prisma/prisma.module';
     PrismaModule,
   ],
   controllers: [AuditController],
-  providers: [AuditService],
+  providers: [AuditService, AuditProcessor],
   exports: [AuditService],
 })
 export class AuditModule {}
