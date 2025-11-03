@@ -21,11 +21,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/perfil/page.js"
     ],
-    "/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
-    ],
     "/usuarios/log-atividades/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",

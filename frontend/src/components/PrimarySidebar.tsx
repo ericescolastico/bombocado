@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { FontAwesomeIcon } from '@/lib/fontawesome';
+import { Avatar } from '@heroui/react';
+import { Badge } from '@heroui/react';
 
 interface PrimarySidebarProps {
   collapsed: boolean;
@@ -110,13 +112,33 @@ export function PrimarySidebar({ collapsed, onToggle }: PrimarySidebarProps) {
     >
       {/* Avatar e informações do usuário */}
       <div className="p-3 flex items-center gap-3">
-        {/* Coluna 1: Avatar */}
+        {/* Coluna 1: Avatar com Badge de status */}
         <button
-          className="grid h-10 w-10 place-items-center rounded-full ring-1 ring-black/5 bg-gradient-to-br from-emerald-400 to-emerald-600 text-white font-semibold"
+          className="relative"
           aria-label="Abrir menu"
           onClick={() => handleNavigation('/perfil')}
         >
-          {user?.firstName?.[0]?.toUpperCase() || 'U'}
+          <Badge
+            content=""
+            color={user?.statusUser === 'ONLINE' ? 'success' : user?.statusUser === 'AUSENTE' ? 'warning' : 'danger'}
+            shape="circle"
+            placement="bottom-right"
+            size="sm"
+            classNames={{
+              base: "border-0",
+              badge: "border-0",
+            }}
+          >
+            <Avatar
+              src={user?.profileImage}
+              name={user?.firstName || 'Usuário'}
+              size="md"
+              radius="full"
+              showFallback
+              classNames={{
+              }}
+            />
+          </Badge>
         </button>
 
         {/* Se expandido, mostrar informações em colunas */}

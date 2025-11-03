@@ -8,6 +8,7 @@ export interface User {
   role: string;
   statusUser: string;
   statusAccount: string;
+  profileImage?: string;
 }
 
 export interface LoginCredentials {

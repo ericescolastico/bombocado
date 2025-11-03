@@ -44,21 +44,24 @@ export class AuthService {
     }
 
     // Resetar tentativas de login falhadas e atualizar último login
-    await this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { userId: user.userId },
       data: {
         failsLogin: 0,
         lastLogin: new Date(),
         statusUser: 'ONLINE',
       },
+      include: {
+        role: true,
+      },
     });
 
     // Gerar token JWT
     const payload = {
-      sub: user.userId,
-      username: user.username,
-      email: user.email,
-      role: user.role.roleName,
+      sub: updatedUser.userId,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      role: updatedUser.role.roleName,
     };
 
     const access_token = this.jwtService.sign(payload);
@@ -66,14 +69,14 @@ export class AuthService {
     return {
       access_token,
       user: {
-        userId: user.userId,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName || undefined,
-        email: user.email,
-        role: user.role.roleName,
-        statusUser: user.statusUser,
-        statusAccount: user.statusAccount,
+        userId: updatedUser.userId,
+        username: updatedUser.username,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName || undefined,
+        email: updatedUser.email,
+        role: updatedUser.role.roleName,
+        statusUser: updatedUser.statusUser,
+        statusAccount: updatedUser.statusAccount,
       },
     };
   }

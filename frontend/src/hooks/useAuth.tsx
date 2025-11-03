@@ -13,16 +13,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Carrega dados do localStorage na inicialização
+  // Carrega dados do localStorage na inicialização e valida o token
   useEffect(() => {
-    const loadUser = () => {
+    const loadUser = async () => {
       try {
         const token = localStorage.getItem('access_token');
         const userData = localStorage.getItem('user');
         
         if (token && userData) {
+          // Carregar dados do localStorage primeiro (para não mostrar loading desnecessário)
           setUser(JSON.parse(userData));
           setIsAuthenticated(true);
+          
+          // Validar token com o backend para obter dados atualizados (incluindo statusUser)
+          try {
+            const response = await api.post('/auth/validate');
+            if (response.data.valid) {
+              setUser(response.data.user);
+              localStorage.setItem('user', JSON.stringify(response.data.user));
+            }
+          } catch (error) {
+            // Se a validação falhar, manter os dados do localStorage
+            console.error('Erro ao validar token:', error);
+          }
         }
       } catch (error) {
         console.error('Erro ao carregar usuário:', error);

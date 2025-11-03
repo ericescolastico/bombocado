@@ -29,3 +29,11 @@ body {
   }
 }
 
+/* Remove borda do badge de status */
+[data-slot="badge"] {
+  border: none;
+  border-width: 0;
+  outline: none;
+  box-shadow: none;
+}
+

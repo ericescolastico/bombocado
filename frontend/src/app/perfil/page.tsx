@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { FontAwesomeIcon } from '@/lib/fontawesome';
 import { api } from '@/lib/api';
+import { Avatar } from '@heroui/react';
 
 interface ProfileFormData {
   nome: string;
@@ -201,16 +202,22 @@ function ProfileContent() {
               {/* Foto de perfil */}
               <div className="flex w-full justify-center">
                 <div className="relative">
-                  <div className="h-40 w-40 overflow-hidden rounded-full shadow ring-1 ring-black/5">
-                    <div className="h-full w-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-6xl text-white font-bold">
-                      {user?.firstName?.[0]?.toUpperCase() || 'E'}
-                    </div>
-                  </div>
+                  <Avatar
+                    src={user?.profileImage}
+                    name={user?.firstName || 'Usuário'}
+                    size="lg"
+                    radius="full"
+                    showFallback
+                    classNames={{
+                      base: "h-40 w-40 ring-1 ring-black/5",
+                      img: "object-cover",
+                    }}
+                  />
                   <button
-                    className="absolute -bottom-1 -right-1 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow ring-1 ring-black/5 hover:bg-white transition-colors"
+                    className="absolute -bottom-1 -right-1 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/90 dark:bg-neutral-900/90 shadow ring-1 ring-black/5 hover:bg-white dark:hover:bg-neutral-900 transition-colors"
                     aria-label="Alterar foto do perfil"
                   >
-                    <FontAwesomeIcon icon="camera" className="w-5 h-5 text-neutral-600" />
+                    <FontAwesomeIcon icon="camera" className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
                   </button>
                 </div>
               </div>
