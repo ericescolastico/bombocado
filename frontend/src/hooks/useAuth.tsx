@@ -67,7 +67,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       setUser(userData);
       setIsAuthenticated(true);
-      router.push('/perfil');
+      router.push('/dashboard');
     } catch (error: any) {
       if (error.response?.status === 401 || error.response?.status === 403) {
         throw new Error('Usuário ou senha inválidos');

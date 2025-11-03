@@ -47,7 +47,7 @@ export function TopBar() {
       </div>
 
       {/* Logo */}
-      <div className="flex items-center ml-8">
+      <a href="/dashboard" className="flex items-center ml-8 cursor-pointer" aria-label="Ir para o Dashboard">
         <Image
           src="/logo.svg"
           alt="BomBocado Logo"
@@ -55,7 +55,7 @@ export function TopBar() {
           height={60}
           className="h-12 w-auto"
         />
-      </div>
+      </a>
     </header>
   );
 }

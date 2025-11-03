@@ -142,7 +142,7 @@ frontend/src/
 ## Como Testar
 
 1. Execute `npm run dev` no diretório `frontend`
-2. Acesse `http://localhost:3000`
+2. Acesse `http://localhost:3001`
 3. Faça login com as credenciais existentes
 4. Teste a sidebar colapsável (botão ou Ctrl+B)
 5. Navegue entre Dashboard e Perfil

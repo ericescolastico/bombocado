@@ -35,148 +35,63 @@ enum AccountStatus {
   BLOQUEADO
 }
 
-// Document Type
-enum DocType {
-  CPF
-  CNPJ
-  RG
-}
-
-// Order Status
-enum OrderStatus {
-  PENDENTE
-  CONFIRMADO
-  EM_PRODUÇÃO
-  PRONTO
-  ENTREGUE
-  CANCELADO
-}
-
-// Payment Method
-enum PaymentMethod {
-  DINHEIRO
-  DEBITO
-  CREDITO
-  PIX
-}
-
 // User Model
 model User {
-  userId       String        @id @default(uuid())
-  username     String        @unique @db.VarChar(50)
-  firstName    String        @db.VarChar(255)
-  lastName     String?       @db.VarChar(255)
-  email        String        @unique @db.VarChar(255)
-  passwordHash String        @db.VarChar(255)
-  profileImage String?       @db.VarChar(512)
-  phone        String?       @db.VarChar(25)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  roleId       String
-  role         Role          @relation(fields: [roleId], references: [roleId])
-  statusUser   UserStatus    @default(OFFLINE)
+  userId        String        @id @default(uuid())
+  username      String        @unique @db.VarChar(50)
+  firstName     String        @db.VarChar(255)
+  lastName      String?       @db.VarChar(255)
+  email         String        @unique @db.VarChar(255)
+  passwordHash  String        @db.VarChar(255)
+  profileImage  String?       @db.VarChar(512)
+  phone         String?       @db.VarChar(25)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  roleId        String
+  role          Role          @relation(fields: [roleId], references: [roleId])
+  statusUser    UserStatus    @default(OFFLINE)
   statusAccount AccountStatus @default(ATIVO)
-  preferences  Json?         @default("{}")
-  emailVerified Boolean      @default(false)
-  deletedAt    DateTime?
-  failsLogin   Int           @default(0)
-  lastLogin    DateTime?
-  lastDevice   String?
+  preferences   Json?         @default("{}")
+  emailVerified Boolean       @default(false)
+  deletedAt     DateTime?
+  failsLogin    Int           @default(0)
+  lastLogin     DateTime?
+  lastDevice    String?
   currentDevice String?
-  
-  createdClients Consumer[] @relation("CreatedBy")
-  orders        Order[]
-  
+
+  auditLogs      AuditLog[]
+
   @@map("users")
 }
 
 // Role Model
 model Role {
-  roleId           String   @id @default(uuid())
-  roleName         RoleName @unique
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  rolePermissions  Json     @default("{}")
-  
+  roleId          String   @id @default(uuid())
+  roleName        RoleName @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  rolePermissions Json     @default("{}")
+
   users User[]
-  
+
   @@map("roles")
 }
 
-// Consumer Model
-model Consumer {
-  consumerId   String    @id @default(uuid())
-  firstName    String    @db.VarChar(255)
-  lastName     String?   @db.VarChar(255)
-  profileImage String?   @db.VarChar(512)
-  email        String?   @db.VarChar(255)
-  address      String?   @db.Text
-  zipcode      String?   @db.VarChar(15)
-  phone        String?   @db.VarChar(25)
-  docNumber    String?   @db.VarChar(50)
-  docType      DocType?
-  notes        String?   @db.Text
-  createdAt    DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  createdById  String
-  createdBy    User      @relation("CreatedBy", fields: [createdById], references: [userId])
-  
-  orders       Order[]
-  
-  @@map("consumers")
-}
+// Audit Log Model
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  event     String   @db.VarChar(100)
+  entity    String?  @db.VarChar(100)
+  entityId  String?
+  ip        String?  @db.VarChar(45)
+  userAgent String?  @db.VarChar(512)
+  meta      Json?    @default("{}")
+  createdAt DateTime @default(now())
 
-// Order Model
-model Order {
-  orderId         String        @id @default(uuid())
-  consumerId      String
-  consumer        Consumer      @relation(fields: [consumerId], references: [consumerId])
-  createdById     String
-  createdBy       User          @relation(fields: [createdById], references: [userId])
-  orderDate       DateTime      @default(now())
-  scheduledDate   DateTime?
-  orderValue      Decimal       @db.Decimal(10, 2)
-  status          OrderStatus   @default(PENDENTE)
-  paymentMethod   PaymentMethod?
-  notes           String?       @db.Text
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  
-  items           OrderItem[]
-  
-  @@map("orders")
-}
-
-// Order Item Model
-model OrderItem {
-  orderItemId String   @id @default(uuid())
-  orderId     String
-  order       Order    @relation(fields: [orderId], references: [orderId])
-  productId   String
-  product     Product  @relation(fields: [productId], references: [productId])
-  quantity    Int
-  unitPrice   Decimal  @db.Decimal(10, 2)
-  subtotal    Decimal  @db.Decimal(10, 2)
-  
-  @@map("order_items")
-}
-
-// Product Model
-model Product {
-  productId      String    @id @default(uuid())
-  name            String    @db.VarChar(255)
-  description     String?   @db.Text
-  price           Decimal   @db.Decimal(10, 2)
-  category        String?   @db.VarChar(100)
-  barcode         String?   @db.VarChar(100)
-  stock           Int       @default(0)
-  minStock        Int       @default(0)
-  image           String?   @db.VarChar(512)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  active          Boolean   @default(true)
-  
-  orderItems      OrderItem[]
-  
-  @@map("products")
+  @@index([userId])
+  @@index([event])
+  @@index([createdAt])
+  @@map("audit_logs")
 }

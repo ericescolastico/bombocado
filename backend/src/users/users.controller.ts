@@ -9,11 +9,14 @@ import {
   UseGuards,
   Request,
   HttpCode,
-  HttpStatus 
+  HttpStatus,
+  Ip,
+  Headers 
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto, ChangePasswordDto, UserResponseDto } from './dto/user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { AuditService } from '../audit/audit.service';
 
 interface AuthenticatedRequest extends Request {
   user: any;
@@ -22,7 +25,10 @@ interface AuthenticatedRequest extends Request {
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private auditService: AuditService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -71,9 +77,24 @@ export class UsersController {
   @Patch('profile')
   async updateProfile(
     @Request() req: AuthenticatedRequest,
-    @Body() updateUserDto: UpdateUserDto
+    @Body() updateUserDto: UpdateUserDto,
+    @Ip() ip: string,
+    @Headers('user-agent') userAgent: string,
   ): Promise<UserResponseDto> {
-    return this.usersService.update(req.user.userId, updateUserDto);
+    const result = await this.usersService.update(req.user.userId, updateUserDto);
+    
+    // Registrar log de atualização de perfil
+    await this.auditService.log({
+      userId: req.user.userId,
+      event: 'user.profile.update',
+      entity: 'user',
+      entityId: req.user.userId,
+      ip,
+      userAgent,
+      meta: { updatedFields: Object.keys(updateUserDto) },
+    });
+
+    return result;
   }
 
   @Patch('profile/change-password')

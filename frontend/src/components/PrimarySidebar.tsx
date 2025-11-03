@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { FontAwesomeIcon } from '@/lib/fontawesome';
@@ -15,6 +15,7 @@ interface NavItem {
   label: string;
   icon: React.ReactNode;
   path: string;
+  children?: NavItem[];
 }
 
 const navItems: NavItem[] = [
@@ -28,7 +29,21 @@ const navItems: NavItem[] = [
     id: 'usuarios',
     label: 'Usuários',
     icon: <FontAwesomeIcon icon="users" className="w-5 h-5" />,
-    path: '/usuarios'
+    path: '/usuarios',
+    children: [
+      {
+        id: 'painel-controle',
+        label: 'Painel Geral de Controle',
+        icon: <FontAwesomeIcon icon="tachometer-alt" className="w-4 h-4" />,
+        path: '/usuarios/painel-controle'
+      },
+      {
+        id: 'log-atividades',
+        label: 'Log de atividades',
+        icon: <FontAwesomeIcon icon="history" className="w-4 h-4" />,
+        path: '/usuarios/log-atividades'
+      }
+    ]
   },
   {
     id: 'configuracoes',
@@ -42,10 +57,48 @@ export function PrimarySidebar({ collapsed, onToggle }: PrimarySidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const handleNavigation = (path: string) => {
     router.push(path);
   };
+
+  const toggleExpanded = (itemId: string) => {
+    // Se o menu estiver colapsado e tiver filhos, expandir o menu primeiro
+    if (collapsed) {
+      onToggle();
+      // Aguardar a animação do sidebar expandir antes de abrir o dropdown
+      setTimeout(() => {
+        setExpandedItems(new Set([itemId]));
+      }, 200);
+      return;
+    }
+    
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
+
+  const isItemActive = (item: NavItem): boolean => {
+    if (pathname === item.path) return true;
+    if (item.children) {
+      return item.children.some(child => pathname.startsWith(child.path));
+    }
+    return false;
+  };
+
+  // Fechar dropdowns quando o sidebar for colapsado
+  useEffect(() => {
+    if (collapsed) {
+      setExpandedItems(new Set());
+    }
+  }, [collapsed]);
 
   return (
     <aside
@@ -95,28 +148,66 @@ export function PrimarySidebar({ collapsed, onToggle }: PrimarySidebarProps) {
       {/* Navegação */}
       <nav className="mt-4 flex-1 space-y-1 px-2">
         {navItems.map((item) => {
-          const isActive = pathname === item.path;
+          const isActive = isItemActive(item);
+          const isExpanded = expandedItems.has(item.id);
+          const hasChildren = item.children && item.children.length > 0;
           
           return (
-            <button
-              key={item.id}
-              onClick={() => handleNavigation(item.path)}
-              className={`
-                flex h-10 w-full items-center rounded-md px-3 text-sm transition-colors
-                ${isActive 
-                  ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-medium' 
-                  : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-100'
-                }
-                ${collapsed ? 'justify-center' : 'gap-3'}
-              `}
-              aria-current={isActive ? 'page' : undefined}
-              title={collapsed ? item.label : undefined}
-            >
-              {item.icon}
-              {!collapsed && (
-                <span className="truncate">{item.label}</span>
+            <div key={item.id} className="space-y-1">
+              <button
+                onClick={() => hasChildren ? toggleExpanded(item.id) : handleNavigation(item.path)}
+                className={`
+                  flex h-10 w-full items-center rounded-md px-3 text-sm transition-colors
+                  ${isActive 
+                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-medium' 
+                    : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-100'
+                  }
+                  ${collapsed ? 'justify-center' : 'gap-3'}
+                `}
+                aria-current={isActive ? 'page' : undefined}
+                title={collapsed ? item.label : undefined}
+              >
+                {item.icon}
+                {!collapsed && (
+                  <>
+                    <span className="truncate flex-1 text-left">{item.label}</span>
+                    {hasChildren && (
+                      <FontAwesomeIcon 
+                        icon="chevron-down" 
+                        className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                      />
+                    )}
+                  </>
+                )}
+              </button>
+              
+              {/* Subitens */}
+              {hasChildren && !collapsed && isExpanded && (
+                <div className="ml-4 space-y-1 border-l-2 border-neutral-200 dark:border-neutral-800 pl-2">
+                  {item.children.map((child) => {
+                    const isChildActive = pathname === child.path;
+                    return (
+                      <button
+                        key={child.id}
+                        onClick={() => handleNavigation(child.path)}
+                        className={`
+                          flex h-9 w-full items-center rounded-md px-3 text-sm transition-colors
+                          ${isChildActive 
+                            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-medium' 
+                            : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 hover:text-neutral-900 dark:hover:text-neutral-100'
+                          }
+                          gap-3
+                        `}
+                        aria-current={isChildActive ? 'page' : undefined}
+                      >
+                        {child.icon}
+                        <span className="truncate">{child.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               )}
-            </button>
+            </div>
           );
         })}
       </nav>
