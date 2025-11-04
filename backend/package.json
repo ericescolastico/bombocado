@@ -25,10 +25,6 @@
     "update:permissions": "ts-node -r tsconfig-paths/register scripts/update-permissions.ts"
   },
   "dependencies": {
-    "@nestjs/platform-socket.io": "^11.0.1",
-    "@nestjs/websockets": "^11.0.1",
-    "@socket.io/redis-adapter": "^8.2.0",
-    "socket.io": "^4.7.5",
     "@nestjs/bull": "^11.0.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
@@ -36,7 +32,10 @@
     "@nestjs/jwt": "^11.0.1",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.0.1",
+    "@nestjs/websockets": "^11.0.1",
     "@prisma/client": "^6.18.0",
+    "@socket.io/redis-adapter": "^8.2.0",
     "bcrypt": "^6.0.0",
     "bull": "^4.16.5",
     "class-transformer": "^0.5.1",
@@ -47,7 +46,8 @@
     "passport-jwt": "^4.0.1",
     "prisma": "^6.18.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "socket.io": "^4.7.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

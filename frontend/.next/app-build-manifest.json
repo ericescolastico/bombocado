@@ -16,16 +16,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/page.js"
     ],
-    "/usuarios/painel-controle/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/usuarios/painel-controle/page.js"
-    ],
-    "/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
-    ],
     "/perfil/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -51,10 +41,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/perfil/estatisticas/page.js"
     ],
-    "/_not-found/page": [
+    "/atendimentos/fluxo/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/atendimentos/fluxo/page.js"
+    ],
+    "/usuarios/painel-controle/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/usuarios/painel-controle/page.js"
     ]
   }
 }

@@ -7,8 +7,8 @@ import { Input } from '@heroui/react';
 import { FontAwesomeIcon } from '@/lib/fontawesome';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('ericescolastico');
-  const [password, setPassword] = useState('**********');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);

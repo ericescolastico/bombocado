@@ -19,9 +19,13 @@ export const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ childr
         return;
       }
       
-      if (user && user.role !== 'ADMIN') {
-        // Redirecionar para dashboard se não for ADMIN
-        router.push('/dashboard');
+      // Verificar se o usuário é ADMIN (comparação case-insensitive)
+      if (user) {
+        const userRole = user.role?.toUpperCase() || '';
+        if (userRole !== 'ADMIN') {
+          // Redirecionar para dashboard se não for ADMIN
+          router.push('/dashboard');
+        }
       }
     }
   }, [isAuthenticated, isLoading, user, router]);
@@ -41,20 +45,23 @@ export const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ childr
     return null;
   }
 
-  // Verificar se o usuário é ADMIN
-  if (user && user.role !== 'ADMIN') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
-        <div className="text-center">
-          <div className="text-red-600 text-xl font-semibold mb-4">
-            Acesso Negado
+  // Verificar se o usuário é ADMIN (comparação case-insensitive)
+  if (user) {
+    const userRole = user.role?.toUpperCase() || '';
+    if (userRole !== 'ADMIN') {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-orange-100">
+          <div className="text-center">
+            <div className="text-red-600 text-xl font-semibold mb-4">
+              Acesso Negado
+            </div>
+            <p className="text-gray-600">
+              Você não tem permissão para acessar esta página.
+            </p>
           </div>
-          <p className="text-gray-600">
-            Você não tem permissão para acessar esta página.
-          </p>
         </div>
-      </div>
-    );
+      );
+    }
   }
 
   return <>{children}</>;

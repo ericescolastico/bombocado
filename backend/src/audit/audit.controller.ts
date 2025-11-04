@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { AuditService } from './audit.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { AuditLogListResponseDto } from './dto/audit-log-response.dto';
@@ -23,8 +23,10 @@ export class AuditController {
     const requesterId = req.user.userId;
     
     // Permitir acesso apenas se for o próprio usuário ou se for admin
-    if (requesterId !== userId && req.user.role !== 'ADMIN') {
-      throw new UnauthorizedException('Não autorizado a acessar estes logs');
+    // req.user.role é um objeto com roleName, não uma string direta
+    const userRole = req.user.role?.roleName || req.user.role || '';
+    if (requesterId !== userId && userRole !== 'ADMIN') {
+      throw new ForbiddenException('Não autorizado a acessar estes logs');
     }
 
     const pageNum = parseInt(page, 10) || 1;

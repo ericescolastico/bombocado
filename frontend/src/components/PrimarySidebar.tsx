@@ -28,6 +28,20 @@ const navItems: NavItem[] = [
     path: '/dashboard'
   },
   {
+    id: 'atendimentos',
+    label: 'Atendimentos',
+    icon: <FontAwesomeIcon icon="headset" className="w-5 h-5" />,
+    path: '/atendimentos',
+    children: [
+      {
+        id: 'fluxo-atendimento',
+        label: 'Fluxo de atendimento',
+        icon: <FontAwesomeIcon icon="columns" className="w-4 h-4" />,
+        path: '/atendimentos/fluxo'
+      }
+    ]
+  },
+  {
     id: 'usuarios',
     label: 'Usuários',
     icon: <FontAwesomeIcon icon="users" className="w-5 h-5" />,
@@ -51,7 +65,15 @@ const navItems: NavItem[] = [
     id: 'configuracoes',
     label: 'Configurações',
     icon: <FontAwesomeIcon icon="cog" className="w-5 h-5" />,
-    path: '/configuracoes'
+    path: '/configuracoes',
+    children: [
+      {
+        id: 'configuracoes-perfil',
+        label: 'Configurações de perfil',
+        icon: <FontAwesomeIcon icon="user-cog" className="w-4 h-4" />,
+        path: '/perfil'
+      }
+    ]
   }
 ];
 

@@ -26,6 +26,13 @@ import {
   faHistory, // Histórico
   faRotateLeft, // Rotacionar/Voltar
   faExclamationTriangle, // Aviso/Erro
+  faSearch, // Busca
+  faPlus, // Adicionar/Criar
+  faTrash, // Excluir
+  faColumns, // Colunas/Kanban
+  faHeadset, // Atendimento/Headset
+  faTimes, // Fechar/X
+  faUserPlus, // Adicionar usuário
 } from '@fortawesome/free-solid-svg-icons';
 
 // Adicionar ícones à biblioteca
@@ -53,6 +60,13 @@ library.add(
   faHistory,
   faRotateLeft,
   faExclamationTriangle,
+  faSearch,
+  faPlus,
+  faTrash,
+  faColumns,
+  faHeadset,
+  faTimes,
+  faUserPlus,
 );
 
 export { FontAwesomeIcon };

@@ -24,8 +24,16 @@ export class PresenceClient {
   ) {}
 
   connect(token: string): void {
-    if (this.socket?.connected) {
+    // Se já existe um socket conectado ou tentando conectar, não criar outro
+    if (this.socket?.connected || this.socket?.connecting) {
       return;
+    }
+
+    // Limpar socket anterior se existir
+    if (this.socket) {
+      this.socket.removeAllListeners();
+      this.socket.disconnect();
+      this.socket = null;
     }
 
     try {
@@ -38,6 +46,7 @@ export class PresenceClient {
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
         reconnectionAttempts: Infinity,
+        timeout: 20000, // Timeout de 20 segundos para a conexão inicial
       });
 
       this.setupEventHandlers();
@@ -98,6 +107,8 @@ export class PresenceClient {
 
     this.socket.on('connect_error', (error) => {
       console.error('[Presence] Connection error:', error);
+      // Não chamar disconnect automaticamente em caso de erro
+      // O Socket.IO vai tentar reconectar automaticamente devido à configuração reconnection: true
       this.onError?.(error);
     });
 
@@ -129,10 +140,20 @@ export class PresenceClient {
       }
     }, HEARTBEAT_INTERVAL_MS);
 
-    // Enviar primeira batida imediatamente
-    if (this.socket?.connected && this.leaderElection?.getLeaderStatus()) {
-      this.socket.emit(PRESENCE_EVENTS.HEARTBEAT);
-    }
+    // Enviar primeira batida assim que possível
+    // Aguardar um pouco para garantir que o leader election tenha tempo de eleger
+    const sendFirstHeartbeat = () => {
+      if (this.socket?.connected && this.leaderElection?.getLeaderStatus()) {
+        console.log('[PresenceClient] Sending first heartbeat');
+        this.socket.emit(PRESENCE_EVENTS.HEARTBEAT);
+      } else {
+        // Se ainda não está pronto, tentar novamente em breve
+        setTimeout(sendFirstHeartbeat, 100);
+      }
+    };
+    
+    // Tentar enviar imediatamente
+    sendFirstHeartbeat();
   }
 
   private stopHeartbeat(): void {
@@ -145,8 +166,16 @@ export class PresenceClient {
   disconnect(): void {
     this.stopHeartbeat();
     this.leaderElection?.cleanup();
-    this.socket?.disconnect();
-    this.socket = null;
+    
+    if (this.socket) {
+      // Verificar se o socket está conectado ou tentando conectar antes de desconectar
+      if (this.socket.connected || this.socket.connecting) {
+        this.socket.disconnect();
+      }
+      this.socket.removeAllListeners();
+      this.socket = null;
+    }
+    
     this.isConnected = false;
   }
 

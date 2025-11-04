@@ -73,6 +73,24 @@ function PageContent() {
     };
   }, []);
 
+  // Recarregar lista quando detectar mudanças de presença (usuário conectando)
+  useEffect(() => {
+    // Aguardar um pouco após o carregamento para dar tempo do cliente de presença conectar
+    const initialDelay = setTimeout(() => {
+      loadUsers(true);
+    }, 2000); // 2 segundos após o carregamento da página
+
+    // Também recarregar após mais tempo para garantir que o heartbeat foi enviado
+    const secondDelay = setTimeout(() => {
+      loadUsers(true);
+    }, 5000); // 5 segundos após o carregamento
+
+    return () => {
+      clearTimeout(initialDelay);
+      clearTimeout(secondDelay);
+    };
+  }, []);
+
   const handleRefresh = () => {
     loadUsers(true);
   };

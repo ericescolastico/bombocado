@@ -35,6 +35,13 @@ enum AccountStatus {
   BLOQUEADO
 }
 
+// Ticket Status
+enum TicketStatus {
+  AGUARDANDO
+  EM_ATENDIMENTO
+  ATENDIDO
+}
+
 // User Model
 model User {
   userId        String        @id @default(uuid())
@@ -113,4 +120,19 @@ model UserSessionTime {
   @@index([sessionDate])
   @@index([userId, sessionDate])
   @@map("user_session_times")
+}
+
+// Ticket Model
+model Ticket {
+  id          String       @id @default(uuid())
+  title       String       @db.VarChar(255)
+  description String?
+  status      TicketStatus @default(AGUARDANDO)
+  position    Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([status])
+  @@index([status, position])
+  @@map("tickets")
 }

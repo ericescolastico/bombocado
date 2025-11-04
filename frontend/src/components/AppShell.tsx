@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PrimarySidebar } from './PrimarySidebar';
 import { TopBar } from './TopBar';
 import { PageTitleProvider } from '@/contexts/PageTitleContext';
@@ -14,34 +14,70 @@ interface AppShellProps {
 export function AppShell({ children }: AppShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { isAuthenticated, user } = useAuth();
-  const [presenceClient, setPresenceClient] = useState<PresenceClient | null>(null);
+  const presenceClientRef = useRef<PresenceClient | null>(null);
 
   // Inicializar cliente de presença quando autenticado
   useEffect(() => {
     if (!isAuthenticated || !user) {
+      // Se desautenticado, desconectar cliente existente
+      if (presenceClientRef.current) {
+        console.log('[AppShell] User logged out, disconnecting presence client');
+        presenceClientRef.current.disconnect();
+        presenceClientRef.current = null;
+      }
       return;
     }
 
     const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null;
     if (!token) {
+      console.warn('[AppShell] No token found, cannot initialize presence client');
       return;
     }
 
-    console.log('[AppShell] Initializing presence client for user:', user.username);
+    // Se já existe um cliente e está conectado ou conectando, não criar outro
+    if (presenceClientRef.current) {
+      const isConnected = presenceClientRef.current.getConnected();
+      console.log(`[AppShell] Presence client already exists, connected=${isConnected}`);
+      if (isConnected) {
+        return;
+      }
+      // Se existe mas não está conectado, desconectar antes de criar novo
+      console.log('[AppShell] Existing client not connected, cleaning up');
+      presenceClientRef.current.disconnect();
+      presenceClientRef.current = null;
+    }
+
+    console.log('[AppShell] Initializing presence client for user:', user.username, 'userId:', user.userId);
     const client = new PresenceClient(
-      () => console.log('[AppShell] Presence client connected'),
-      () => console.log('[AppShell] Presence client disconnected'),
-      (error) => console.error('[AppShell] Presence client error:', error),
+      () => {
+        console.log('[AppShell] Presence client connected successfully');
+        // Enviar primeiro heartbeat imediatamente após conexão
+        setTimeout(() => {
+          if (client.getConnected() && client.getLeaderStatus()) {
+            console.log('[AppShell] Client is leader, will send heartbeat');
+          }
+        }, 500);
+      },
+      () => {
+        console.log('[AppShell] Presence client disconnected');
+      },
+      (error) => {
+        console.error('[AppShell] Presence client error:', error);
+      },
     );
 
     client.connect(token);
-    setPresenceClient(client);
+    presenceClientRef.current = client;
 
     return () => {
       console.log('[AppShell] Cleaning up presence client');
-      client.disconnect();
+      // Verificar se o cliente ainda existe antes de desconectar
+      if (presenceClientRef.current) {
+        presenceClientRef.current.disconnect();
+        presenceClientRef.current = null;
+      }
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user?.userId]); // Usar user?.userId em vez de user inteiro para evitar re-renders desnecessários
 
   // Toggle sidebar com Ctrl/Cmd + B
   useEffect(() => {

@@ -80,15 +80,19 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   async validate(@Request() req: AuthenticatedRequest): Promise<{ valid: boolean; user: any }> {
+    // req.user vem do validateUser que retorna o objeto User completo do Prisma
+    // que inclui a relação role
+    const userRole = req.user.role?.roleName || req.user.role || 'UNKNOWN';
+    
     return {
       valid: true,
       user: {
         userId: req.user.userId,
         username: req.user.username,
         firstName: req.user.firstName,
-        lastName: req.user.lastName,
+        lastName: req.user.lastName || undefined,
         email: req.user.email,
-        role: req.user.role.roleName,
+        role: userRole,
         statusUser: req.user.statusUser,
         statusAccount: req.user.statusAccount,
       },

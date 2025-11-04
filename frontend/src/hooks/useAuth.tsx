@@ -31,16 +31,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (response.data.valid) {
               setUser(response.data.user);
               localStorage.setItem('user', JSON.stringify(response.data.user));
+              setIsAuthenticated(true);
+            } else {
+              // Token inválido - limpar autenticação
+              console.warn('Token inválido na validação');
+              setUser(null);
+              setIsAuthenticated(false);
+              localStorage.removeItem('access_token');
+              localStorage.removeItem('user');
             }
-          } catch (error) {
-            // Se a validação falhar, manter os dados do localStorage
-            console.error('Erro ao validar token:', error);
+          } catch (error: any) {
+            // Se a validação falhar com 401, o token está inválido
+            // Não fazer logout aqui porque o interceptor já vai tratar
+            // Mas limpar o estado de autenticação para evitar requisições com token inválido
+            if (error.response?.status === 401) {
+              console.warn('Token inválido ou expirado. Limpando autenticação...');
+              setUser(null);
+              setIsAuthenticated(false);
+              localStorage.removeItem('access_token');
+              localStorage.removeItem('user');
+              // Não redirecionar aqui, deixar o ProtectedRoute fazer isso
+            } else {
+              // Outros erros (rede, etc) - manter dados do localStorage temporariamente
+              console.error('Erro ao validar token (não-401):', error);
+              // Manter autenticação por enquanto, mas pode estar desatualizado
+            }
           }
+        } else {
+          // Sem token ou dados - não autenticado
+          setIsAuthenticated(false);
+          setUser(null);
         }
       } catch (error) {
         console.error('Erro ao carregar usuário:', error);
         localStorage.removeItem('access_token');
         localStorage.removeItem('user');
+        setIsAuthenticated(false);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }

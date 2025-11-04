@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@/lib/fontawesome';
 import { DateRangePicker } from '@heroui/react';
 import { parseDateTime } from '@internationalized/date';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { useAuth } from '@/hooks/useAuth';
 
 interface UserOption {
   userId: string;
@@ -40,6 +41,7 @@ type ActivityType = 'all' | 'entradas' | 'saidas';
 
 function PageContent() {
   usePageTitle('Log de Atividades');
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [users, setUsers] = useState<UserOption[]>([]);
   const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
 
@@ -57,20 +59,67 @@ function PageContent() {
   }, [users]);
 
   useEffect(() => {
+    // Aguardar até que a autenticação seja confirmada e o usuário seja ADMIN
+    // IMPORTANTE: Só fazer requisições depois que o authLoading for false
+    if (authLoading) {
+      return; // Ainda carregando autenticação - NÃO fazer requisições ainda
+    }
+
+    // Se não está autenticado, não fazer nada (ProtectedAdminRoute vai redirecionar)
+    if (!isAuthenticated) {
+      return; // Não autenticado
+    }
+
+    // Se não tem usuário, não fazer requisições
+    if (!user) {
+      return; // Usuário não carregado
+    }
+
+    // Verificar se o usuário é ADMIN (comparação case-insensitive)
+    const userRole = user.role?.toUpperCase() || '';
+    if (userRole !== 'ADMIN') {
+      console.warn('Usuário não é ADMIN. Role atual:', userRole);
+      return; // Não é ADMIN, não fazer requisição
+    }
+
+    // Verificar se há token válido antes de fazer requisição
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      console.warn('Token não encontrado no localStorage');
+      return; // Sem token, não fazer requisição
+    }
+
     const loadUsers = async () => {
       setLoadingUsers(true);
       try {
         const { data } = await api.get<UserOption[]>('/users');
         setUsers(data);
-      } catch (e) {
+      } catch (e: any) {
         console.error('Erro ao carregar usuários', e);
+        
+        // Tratamento específico de erros
+        if (e.response?.status === 401) {
+          // Token inválido - o interceptor vai tratar o logout
+          console.warn('Token inválido ao carregar usuários');
+        } else if (e.response?.status === 403) {
+          // Sem permissão - não fazer logout, apenas mostrar erro
+          console.warn('Sem permissão para carregar usuários (403)');
+        } else if (e.response?.status === 404) {
+          // Endpoint não encontrado
+          console.error('Endpoint /users não encontrado');
+        } else {
+          // Outros erros (rede, etc)
+          console.error('Erro desconhecido ao carregar usuários:', e.message);
+        }
+        
         setUsers([]);
       } finally {
         setLoadingUsers(false);
       }
     };
+    
     loadUsers();
-  }, []);
+  }, [authLoading, isAuthenticated, user]);
 
   const formatEventDescription = (event: string): string => {
     const eventMap: Record<string, string> = {
@@ -100,36 +149,76 @@ function PageContent() {
   };
 
   const fetchLogsForUser = async (userId: string): Promise<AuditLog[]> => {
-    const { data } = await api.get<AuditLogsResponse>(`/audit/${userId}`, {
-      params: { page: 1, limit: 50 },
-    });
-    // Backend não inclui userId/user no select; anexar userId aqui
-    return data.data.map(l => ({ ...l, userId }));
+    try {
+      const { data } = await api.get<AuditLogsResponse>(`/audit/${userId}`, {
+        params: { page: 1, limit: 50 },
+      });
+      // Backend não inclui userId/user no select; anexar userId aqui
+      return data.data.map(l => ({ ...l, userId }));
+    } catch (error: any) {
+      // Se for erro 401, pode ser que o token expirou durante a requisição
+      // Não fazer throw para não interromper outras requisições em paralelo
+      if (error.response?.status === 401) {
+        console.warn(`Token inválido ao carregar logs do usuário ${userId}`);
+        // Retornar array vazio - o interceptor do axios vai tratar o logout
+        return [];
+      }
+      // Para outros erros (403, 404, etc), apenas logar e retornar vazio
+      if (error.response?.status !== 401) {
+        console.error(`Erro ao carregar logs do usuário ${userId}:`, error.response?.status || error.message);
+      }
+      // Retornar array vazio em caso de erro
+      return [];
+    }
   };
 
   const fetchAllLogs = async () => {
     setLoadingLogs(true);
     try {
+      // Verificar se ainda há token antes de fazer requisições
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.warn('Token não encontrado ao carregar logs');
+        setLogs([]);
+        return;
+      }
+
       let fetched: AuditLog[] = [];
       if (selectedUserId === 'all') {
         // Buscar logs de todos os usuários em paralelo (limitando por quantidade retornada em cada chamada)
         const ids = users.map(u => u.userId);
+        if (ids.length === 0) {
+          setLogs([]);
+          return;
+        }
         const chunks: string[][] = [];
         const chunkSize = 5;
         for (let i = 0; i < ids.length; i += chunkSize) chunks.push(ids.slice(i, i + chunkSize));
         for (const chunk of chunks) {
+          // Verificar token antes de cada chunk
+          const currentToken = localStorage.getItem('access_token');
+          if (!currentToken) {
+            console.warn('Token removido durante carregamento de logs');
+            break;
+          }
           // eslint-disable-next-line no-await-in-loop
           const results = await Promise.allSettled(chunk.map(id => fetchLogsForUser(id)));
           for (const r of results) {
             if (r.status === 'fulfilled') fetched = fetched.concat(r.value);
+            // Se foi rejeitado por 401, o interceptor já tratou o logout
+            // Não fazer throw para não interromper outras requisições
           }
         }
       } else {
         fetched = await fetchLogsForUser(selectedUserId);
       }
       setLogs(fetched);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Erro ao carregar logs', e);
+      // Se for erro 401 ou 403, pode ser que o token expirou ou não tem permissão
+      if (e.response?.status === 401 || e.response?.status === 403) {
+        console.warn('Erro de autenticação ao carregar logs');
+      }
       setLogs([]);
     } finally {
       setLoadingLogs(false);
@@ -137,11 +226,42 @@ function PageContent() {
   };
 
   useEffect(() => {
-    if (!loadingUsers) {
-      fetchAllLogs();
+    // Aguardar até que a autenticação seja confirmada e o usuário seja ADMIN
+    // IMPORTANTE: Só fazer requisições depois que o authLoading for false
+    if (authLoading) {
+      return; // Ainda carregando autenticação - NÃO fazer requisições ainda
     }
+
+    // Se não está autenticado, não fazer nada
+    if (!isAuthenticated) {
+      return; // Não autenticado
+    }
+
+    // Se não tem usuário, não fazer requisições
+    if (!user) {
+      return; // Usuário não carregado
+    }
+
+    // Verificar se o usuário é ADMIN (comparação case-insensitive)
+    const userRole = user.role?.toUpperCase() || '';
+    if (userRole !== 'ADMIN') {
+      return; // Não é ADMIN, não fazer requisição
+    }
+
+    // Verificar se há token válido antes de fazer requisição
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      return; // Sem token, não fazer requisição
+    }
+
+    if (loadingUsers) {
+      return; // Ainda carregando usuários
+    }
+
+    // Só fazer requisição se houver usuários carregados (ou se não precisar de usuários)
+    fetchAllLogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedUserId, users.length]);
+  }, [selectedUserId, users.length, authLoading, isAuthenticated, user, loadingUsers]);
 
   const filteredLogs = useMemo(() => {
     const byType = (log: AuditLog) => {
