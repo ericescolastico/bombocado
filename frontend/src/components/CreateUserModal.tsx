@@ -361,7 +361,7 @@ export const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 isLoading={loadingRoles}
               >
                 {roles.map((role) => (
-                  <SelectItem key={role.roleName} value={role.roleName}>
+                  <SelectItem key={role.roleName}>
                     {getRoleLabel(role.roleName)}
                   </SelectItem>
                 ))}

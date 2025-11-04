@@ -5,7 +5,6 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
-  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server } from 'socket.io';
 import { Logger } from '@nestjs/common';
@@ -80,7 +79,7 @@ export class PresenceGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     }
   }
 
-  async handleConnection(@ConnectedSocket() client: AuthenticatedSocket) {
+  async handleConnection(client: AuthenticatedSocket) {
     this.logger.log(`Client connecting: ${client.id}`);
     
     // Validar token manualmente
@@ -143,14 +142,14 @@ export class PresenceGateway implements OnGatewayInit, OnGatewayConnection, OnGa
     }
   }
 
-  async handleDisconnect(@ConnectedSocket() client: AuthenticatedSocket) {
+  async handleDisconnect(client: AuthenticatedSocket) {
     this.logger.log(`Client disconnected: ${client.id} (userId: ${client.userId || 'unknown'})`);
     // Não marca offline imediatamente; TTL do Redis cuida disso
     this.rateLimitMap.delete(client.id);
   }
 
   @SubscribeMessage(PRESENCE_EVENTS.HEARTBEAT)
-  async handleHeartbeat(@ConnectedSocket() client: AuthenticatedSocket) {
+  async handleHeartbeat(client: AuthenticatedSocket) {
     if (!client.userId) {
       this.logger.warn(`Heartbeat rejected: no userId (socket: ${client.id})`);
       return;

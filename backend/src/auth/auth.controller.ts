@@ -16,7 +16,7 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.CREATED)
   async login(
     @Body() loginDto: LoginDto,
     @Ip() ip: string,

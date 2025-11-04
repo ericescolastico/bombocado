@@ -8,7 +8,10 @@
     "prebuild": "node scripts/sync-env.mjs",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:e2e": "node scripts/run-e2e-tests.mjs",
+    "test:e2e:ui": "playwright test --config e2e/playwright.config.ts --ui",
+    "test:e2e:debug": "playwright test --config e2e/playwright.config.ts --debug"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
@@ -29,12 +32,14 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.0",
+    "playwright": "^1.56.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.14",
     "typescript": "^5.6.0"

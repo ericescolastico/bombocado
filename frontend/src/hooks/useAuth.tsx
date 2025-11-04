@@ -109,12 +109,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setIsAuthenticated(true);
       router.push('/dashboard');
     } catch (error: any) {
+      // Preservar o objeto de erro original para que a página possa acessar error.response
       if (error.response?.status === 401 || error.response?.status === 403) {
-        throw new Error('Usuário ou senha inválidos');
+        const newError: any = new Error('Usuário ou senha incorretos');
+        newError.response = error.response;
+        throw newError;
       } else if (error.response?.status === 423) {
         throw new Error('Usuário bloqueado. Entre em contato com o administrador.');
       }
-      throw new Error('Erro ao fazer login. Tente novamente.');
+      const newError: any = new Error('Erro ao fazer login');
+      newError.response = error.response;
+      newError.code = error.code;
+      throw newError;
     }
   };
 

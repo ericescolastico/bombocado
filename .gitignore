@@ -49,3 +49,12 @@ backend/generated/
 .vscode/
 .idea/
 
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+frontend/test-results/
+frontend/playwright-report/
+backend/test-results/
+backend/playwright-report/
+

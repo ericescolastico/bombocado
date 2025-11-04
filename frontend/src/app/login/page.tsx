@@ -37,7 +37,7 @@ export default function LoginPage() {
       await login({ username: username.trim(), password });
     } catch (err: any) {
       // Tratamento de erros
-      if (err.response?.status === 401) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
         setError('Usuário ou senha incorretos');
       } else if (err.code === 'ERR_NETWORK' || !err.response) {
         setError('Não foi possível conectar. Tente novamente.');
@@ -90,7 +90,7 @@ export default function LoginPage() {
                   aria-describedby={error ? 'username-error' : undefined}
                 />
               </div>
-              {error && (error.includes('usuário') || error.includes('Usuário')) && (
+              {error && (error.includes('usuário') || error.includes('Usuário')) && !error.includes('incorretos') && (
                 <p id="username-error" className="mt-1 text-xs text-red-600" role="alert">
                   {error}
                 </p>

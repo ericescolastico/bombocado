@@ -24,8 +24,8 @@ export class PresenceClient {
   ) {}
 
   connect(token: string): void {
-    // Se já existe um socket conectado ou tentando conectar, não criar outro
-    if (this.socket?.connected || this.socket?.connecting) {
+    // Se já existe um socket conectado, não criar outro
+    if (this.socket?.connected) {
       return;
     }
 
@@ -168,8 +168,8 @@ export class PresenceClient {
     this.leaderElection?.cleanup();
     
     if (this.socket) {
-      // Verificar se o socket está conectado ou tentando conectar antes de desconectar
-      if (this.socket.connected || this.socket.connecting) {
+      // Verificar se o socket está conectado antes de desconectar
+      if (this.socket.connected) {
         this.socket.disconnect();
       }
       this.socket.removeAllListeners();
