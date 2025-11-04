@@ -165,11 +165,35 @@ export class SessionTimeService {
    * Obtém o tempo total online de um usuário (todos os dias)
    */
   async getTotalTime(userId: string): Promise<number> {
+    // Validar que userId foi fornecido
+    if (!userId) {
+      this.logger.error('getTotalTime chamado sem userId');
+      throw new Error('userId é obrigatório');
+    }
+
+    // Log para debug (pode ser removido depois)
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug(`Buscando tempo total para userId: ${userId}`);
+    }
+
     const sessions = await this.prisma.userSessionTime.findMany({
       where: {
         userId,
       },
     });
+
+    // Log para debug (pode ser removido depois)
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug(`Encontradas ${sessions.length} sessões para userId: ${userId}`);
+      // Verificar se há sessões de outros usuários (não deveria acontecer)
+      const wrongSessions = sessions.filter(s => s.userId !== userId);
+      if (wrongSessions.length > 0) {
+        this.logger.error(`ERRO: Encontradas ${wrongSessions.length} sessões com userId diferente!`, {
+          expectedUserId: userId,
+          wrongSessionIds: wrongSessions.map(s => s.id),
+        });
+      }
+    }
 
     // Calcular tempo total
     let totalSeconds = 0;
@@ -186,6 +210,11 @@ export class SessionTimeService {
         );
         totalSeconds += durationSeconds;
       }
+    }
+
+    // Log para debug (pode ser removido depois)
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug(`Tempo total calculado para userId ${userId}: ${totalSeconds} segundos (${Math.floor(totalSeconds / 3600)}h)`);
     }
 
     return totalSeconds;

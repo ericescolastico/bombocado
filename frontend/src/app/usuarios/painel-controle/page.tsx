@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ProtectedAdminRoute } from '@/components/ProtectedAdminRoute';
 import { AppShell } from '@/components/AppShell';
+import { CreateUserModal } from '@/components/CreateUserModal';
 import { api } from '@/lib/api';
 import { FontAwesomeIcon } from '@/lib/fontawesome';
 import { usePageTitle } from '@/hooks/usePageTitle';
@@ -35,6 +36,7 @@ function PageContent() {
   const [users, setUsers] = useState<UserWithPresence[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
 
   const loadUsers = async (showRefreshing = false) => {
     if (showRefreshing) {
@@ -207,10 +209,10 @@ function PageContent() {
           <div className="mt-6 flex items-center justify-start gap-2">
             <button
               type="button"
-              disabled
-              className="inline-flex items-center gap-2 rounded-md bg-gray-300 dark:bg-gray-700 text-white px-4 py-2 text-sm font-medium cursor-not-allowed opacity-60"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-md bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 text-sm font-medium transition-colors"
             >
-              <FontAwesomeIcon icon="user" className="w-4 h-4" />
+              <FontAwesomeIcon icon="user-plus" className="w-4 h-4" />
               <span>Criar Usuário</span>
             </button>
             <button
@@ -228,6 +230,15 @@ function PageContent() {
           </div>
         </div>
       </section>
+
+      {/* Modal de Criação de Usuário */}
+      <CreateUserModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={() => {
+          loadUsers();
+        }}
+      />
     </div>
   );
 }

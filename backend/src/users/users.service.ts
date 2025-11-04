@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PresenceService } from '../presence/presence.service';
 import { SessionTimeService } from '../session-time/session-time.service';
 import { CreateUserDto, UpdateUserDto, ChangePasswordDto, UserResponseDto, UserWithPresenceDto } from './dto/user.dto';
+import { RoleName } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -15,6 +16,11 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     const { username, firstName, lastName, email, password, phone, roleName } = createUserDto;
+
+    // Bloquear criação de usuários ADMIN
+    if (roleName === RoleName.ADMIN) {
+      throw new ForbiddenException('Não é permitido criar usuários com role ADMIN');
+    }
 
     // Verificar se usuário já existe
     const existingUser = await this.prisma.user.findFirst({

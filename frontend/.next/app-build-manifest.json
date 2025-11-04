@@ -21,10 +21,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/usuarios/painel-controle/page.js"
     ],
-    "/usuarios/log-atividades/page": [
+    "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/usuarios/log-atividades/page.js"
+      "static/chunks/app/login/page.js"
     ],
     "/perfil/page": [
       "static/chunks/webpack.js",
@@ -50,6 +50,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/perfil/estatisticas/page.js"
+    ],
+    "/_not-found/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }
