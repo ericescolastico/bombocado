@@ -33,6 +33,9 @@ import {
   faHeadset, // Atendimento/Headset
   faTimes, // Fechar/X
   faUserPlus, // Adicionar usuário
+  faInbox, // Caixa de entrada/Inbox
+  faComments, // Comentários/Conversas
+  faUserCog, // Configurações de usuário
 } from '@fortawesome/free-solid-svg-icons';
 
 // Adicionar ícones à biblioteca
@@ -67,6 +70,9 @@ library.add(
   faHeadset,
   faTimes,
   faUserPlus,
+  faInbox,
+  faComments,
+  faUserCog,
 );
 
 export { FontAwesomeIcon };

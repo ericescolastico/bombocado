@@ -42,6 +42,18 @@ enum TicketStatus {
   ATENDIDO
 }
 
+// Conversation Status
+enum ConversationStatus {
+  OPEN
+  CLOSED
+}
+
+// Message Direction
+enum MessageDirection {
+  IN
+  OUT
+}
+
 // User Model
 model User {
   userId        String        @id @default(uuid())
@@ -135,4 +147,39 @@ model Ticket {
   @@index([status])
   @@index([status, position])
   @@map("tickets")
+}
+
+// Conversation Model
+model Conversation {
+  id            String             @id @default(uuid())
+  status        ConversationStatus @default(OPEN)
+  lastMessageAt DateTime?
+  title         String?
+  contactName   String?
+  channel       String             @default("local")
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  messages      Message[]
+
+  @@index([status])
+  @@index([lastMessageAt])
+  @@index([status, lastMessageAt])
+  @@index([channel])
+  @@map("conversations")
+}
+
+// Message Model
+model Message {
+  id             String           @id @default(uuid())
+  conversationId String
+  conversation   Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  direction      MessageDirection
+  body           String           @db.Text
+  readAt         DateTime?
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId])
+  @@index([conversationId, createdAt])
+  @@index([direction])
+  @@map("messages")
 }

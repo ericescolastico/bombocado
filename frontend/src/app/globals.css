@@ -37,3 +37,63 @@ body {
   box-shadow: none;
 }
 
+/* Remove completamente as bordas dos inputs do HeroUI */
+[data-slot="input-wrapper"],
+[data-slot="textarea-wrapper"] {
+  border: none !important;
+  border-width: 0 !important;
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove bordas em todos os estados */
+[data-slot="input-wrapper"]:focus-within,
+[data-slot="textarea-wrapper"]:focus-within,
+[data-slot="input-wrapper"].focus-within,
+[data-slot="textarea-wrapper"].focus-within,
+[data-slot="input-wrapper"]:focus,
+[data-slot="textarea-wrapper"]:focus,
+[data-slot="input-wrapper"]:focus-visible,
+[data-slot="textarea-wrapper"]:focus-visible,
+[data-slot="input-wrapper"]:hover,
+[data-slot="textarea-wrapper"]:hover {
+  border: none !important;
+  border-width: 0 !important;
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.dark [data-slot="input-wrapper"],
+.dark [data-slot="textarea-wrapper"],
+.dark [data-slot="input-wrapper"]:focus-within,
+.dark [data-slot="textarea-wrapper"]:focus-within,
+.dark [data-slot="input-wrapper"]:focus,
+.dark [data-slot="textarea-wrapper"]:focus,
+.dark [data-slot="input-wrapper"]:hover,
+.dark [data-slot="textarea-wrapper"]:hover {
+  border: none !important;
+  border-width: 0 !important;
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove qualquer outline ou borda dos elementos internos */
+[data-slot="input-wrapper"] *,
+[data-slot="textarea-wrapper"] *,
+[data-slot="inner-wrapper"],
+[data-slot="input"] {
+  outline: none !important;
+  border: none !important;
+}
+
+[data-slot="input"]:focus,
+[data-slot="input"]:focus-visible,
+[data-slot="input"]:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+

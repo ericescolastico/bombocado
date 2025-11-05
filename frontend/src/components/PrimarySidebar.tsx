@@ -34,6 +34,12 @@ const navItems: NavItem[] = [
     path: '/atendimentos',
     children: [
       {
+        id: 'caixa-entrada',
+        label: 'Caixa de Entrada',
+        icon: <FontAwesomeIcon icon="inbox" className="w-4 h-4" />,
+        path: '/atendimentos/inbox'
+      },
+      {
         id: 'fluxo-atendimento',
         label: 'Fluxo de atendimento',
         icon: <FontAwesomeIcon icon="columns" className="w-4 h-4" />,
