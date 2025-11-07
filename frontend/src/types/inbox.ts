@@ -1,6 +1,7 @@
 export enum ConversationStatus {
-  OPEN = 'OPEN',
-  CLOSED = 'CLOSED',
+  AGUARDANDO = 'AGUARDANDO',
+  EM_ATENDIMENTO = 'EM_ATENDIMENTO',
+  ATENDIDO = 'ATENDIDO',
 }
 
 export enum MessageDirection {
@@ -64,4 +65,8 @@ export interface GetConversationsParams {
 export interface GetMessagesParams {
   page?: number;
   pageSize?: number;
+}
+
+export interface MoveConversationDto {
+  toStatus: ConversationStatus;
 }

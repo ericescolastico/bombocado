@@ -8,6 +8,8 @@ import {
   CreateMessageDto,
   GetConversationsParams,
   GetMessagesParams,
+  MoveConversationDto,
+  ConversationStatus,
 } from '@/types/inbox';
 
 export const inboxApi = {
@@ -33,6 +35,22 @@ export const inboxApi = {
     const response = await api.post<Conversation>(
       '/inbox/conversations',
       data,
+    );
+    return response.data;
+  },
+
+  async getAllForKanban(): Promise<Conversation[]> {
+    const response = await api.get<Conversation[]>('/inbox/conversations/kanban/all');
+    return response.data;
+  },
+
+  async moveConversation(
+    id: string,
+    toStatus: ConversationStatus,
+  ): Promise<Conversation> {
+    const response = await api.patch<Conversation>(
+      `/inbox/conversations/${id}/move`,
+      { toStatus },
     );
     return response.data;
   },

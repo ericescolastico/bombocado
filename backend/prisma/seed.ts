@@ -1,4 +1,4 @@
-import { PrismaClient, RoleName } from '@prisma/client';
+import { PrismaClient, RoleName, ConversationStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { DEFAULT_ROLE_PERMISSIONS } from '../src/auth/permissions';
 
@@ -70,7 +70,7 @@ async function main() {
     data: {
       title: 'Cliente João Silva',
       contactName: 'João Silva',
-      status: 'OPEN',
+      status: ConversationStatus.AGUARDANDO,
       channel: 'local',
       lastMessageAt: new Date(),
       messages: {
@@ -92,7 +92,7 @@ async function main() {
     data: {
       title: 'Cliente Maria Santos',
       contactName: 'Maria Santos',
-      status: 'OPEN',
+      status: ConversationStatus.AGUARDANDO,
       channel: 'local',
       lastMessageAt: new Date(Date.now() - 3600000), // 1 hora atrás
       messages: {

@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum, IsInt, Min, Max } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsInt, Min, Max, IsNotEmpty } from 'class-validator';
 import { ConversationStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
 
@@ -57,4 +57,11 @@ export class PaginatedConversationsResponseDto {
   page: number;
   pageSize: number;
   totalPages: number;
+}
+
+// DTO para mover conversa
+export class MoveConversationDto {
+  @IsEnum(ConversationStatus)
+  @IsNotEmpty()
+  toStatus: ConversationStatus;
 }

@@ -5,27 +5,25 @@ import { AppShell } from '@/components/AppShell';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
-import { useTicketsStore } from '@/stores/tickets.store';
+import { useConversationsStore } from '@/stores/conversations.store';
 import { FontAwesomeIcon } from '@/lib/fontawesome';
 
 function FluxoAtendimentoContent() {
   usePageTitle('Fluxo de atendimento');
-  const { tickets } = useTicketsStore();
+  const { conversations } = useConversationsStore();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredTickets = useMemo(() => {
+  const filteredConversations = useMemo(() => {
     if (!searchQuery.trim()) {
-      return tickets;
+      return conversations;
     }
     const query = searchQuery.toLowerCase();
-    return tickets.filter(
-      ticket =>
-        ticket.title.toLowerCase().includes(query) ||
-        (ticket.description?.toLowerCase().includes(query) ?? false)
+    return conversations.filter(
+      conversation =>
+        (conversation.title?.toLowerCase().includes(query) ?? false) ||
+        (conversation.contactName?.toLowerCase().includes(query) ?? false)
     );
-  }, [tickets, searchQuery]);
-
-
+  }, [conversations, searchQuery]);
 
   return (
     <div className="px-8 pb-16 h-full flex flex-col">
@@ -43,7 +41,7 @@ function FluxoAtendimentoContent() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar tickets..."
+            placeholder="Buscar conversas..."
             className="w-full pl-10 pr-4 py-2 border border-neutral-300 dark:border-neutral-600 rounded-lg
                      bg-white dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100
                      focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent
@@ -54,7 +52,7 @@ function FluxoAtendimentoContent() {
 
       {/* Kanban Board */}
       <div className="flex-1 min-h-0">
-        <KanbanBoard tickets={searchQuery.trim() ? filteredTickets : undefined} />
+        <KanbanBoard conversations={searchQuery.trim() ? filteredConversations : undefined} />
       </div>
     </div>
   );

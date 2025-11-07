@@ -35,17 +35,11 @@ enum AccountStatus {
   BLOQUEADO
 }
 
-// Ticket Status
-enum TicketStatus {
+// Conversation Status
+enum ConversationStatus {
   AGUARDANDO
   EM_ATENDIMENTO
   ATENDIDO
-}
-
-// Conversation Status
-enum ConversationStatus {
-  OPEN
-  CLOSED
 }
 
 // Message Direction
@@ -134,25 +128,10 @@ model UserSessionTime {
   @@map("user_session_times")
 }
 
-// Ticket Model
-model Ticket {
-  id          String       @id @default(uuid())
-  title       String       @db.VarChar(255)
-  description String?
-  status      TicketStatus @default(AGUARDANDO)
-  position    Int          @default(0)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  @@index([status])
-  @@index([status, position])
-  @@map("tickets")
-}
-
 // Conversation Model
 model Conversation {
   id            String             @id @default(uuid())
-  status        ConversationStatus @default(OPEN)
+  status        ConversationStatus @default(AGUARDANDO)
   lastMessageAt DateTime?
   title         String?
   contactName   String?

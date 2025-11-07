@@ -5,6 +5,7 @@ import {
   ConversationResponseDto,
   GetConversationsQueryDto,
   PaginatedConversationsResponseDto,
+  MoveConversationDto,
 } from './dto/conversation.dto';
 import { ConversationStatus } from '@prisma/client';
 
@@ -19,7 +20,7 @@ export class ConversationsService {
       data: {
         title: createConversationDto.title,
         contactName: createConversationDto.contactName,
-        status: 'OPEN',
+        status: ConversationStatus.AGUARDANDO,
         channel: 'local',
       },
     });
@@ -95,6 +96,44 @@ export class ConversationsService {
     }
 
     return this.mapToResponse(conversation, conversation._count.messages);
+  }
+
+  async findAllForKanban(): Promise<ConversationResponseDto[]> {
+    const conversations = await this.prisma.conversation.findMany({
+      orderBy: [
+        { status: 'asc' },
+        { lastMessageAt: 'desc' },
+        { updatedAt: 'desc' },
+      ],
+      include: {
+        _count: {
+          select: { messages: true },
+        },
+      },
+    });
+
+    return conversations.map((conv) =>
+      this.mapToResponse(conv, conv._count.messages),
+    );
+  }
+
+  async move(id: string, moveConversationDto: MoveConversationDto): Promise<ConversationResponseDto> {
+    const conversation = await this.findOne(id);
+    const { toStatus } = moveConversationDto;
+
+    const updatedConversation = await this.prisma.conversation.update({
+      where: { id },
+      data: {
+        status: toStatus,
+      },
+      include: {
+        _count: {
+          select: { messages: true },
+        },
+      },
+    });
+
+    return this.mapToResponse(updatedConversation, updatedConversation._count.messages);
   }
 
   private mapToResponse(

@@ -41,6 +41,7 @@ export const Thread: React.FC<ThreadProps> = ({ conversationId, refreshKey }) =>
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(1);
+  const [conversation, setConversation] = useState<{ contactName: string | null } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
@@ -90,8 +91,17 @@ export const Thread: React.FC<ThreadProps> = ({ conversationId, refreshKey }) =>
   useEffect(() => {
     if (conversationId) {
       loadMessages(1, true);
+      // Carregar dados da conversa para obter contactName
+      inboxApi.getConversation(conversationId)
+        .then((conv) => {
+          setConversation({ contactName: conv.contactName });
+        })
+        .catch((err) => {
+          console.error('[Thread] Erro ao carregar conversa:', err);
+        });
     } else {
       setMessages([]);
+      setConversation(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, refreshKey]);
@@ -246,11 +256,7 @@ export const Thread: React.FC<ThreadProps> = ({ conversationId, refreshKey }) =>
                       >
                         {/* Nome e hora - apenas se não for continuação */}
                         {(!sameSender || isFirstInGroup) && (
-                          <div
-                            className={`flex items-center space-x-2 rtl:space-x-reverse mb-1 ${
-                              isOut ? 'flex-row-reverse' : ''
-                            }`}
-                          >
+                          <div className="flex items-center space-x-2 mb-1">
                             <span
                               className={`text-sm font-semibold ${
                                 isOut
@@ -258,7 +264,7 @@ export const Thread: React.FC<ThreadProps> = ({ conversationId, refreshKey }) =>
                                   : 'text-gray-900 dark:text-white'
                               }`}
                             >
-                              {isOut ? userName : 'Contato'}
+                              {isOut ? userName : (conversation?.contactName || 'Contato')}
                             </span>
                             <span
                               className={`text-sm font-normal ${

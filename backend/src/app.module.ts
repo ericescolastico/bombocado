@@ -10,7 +10,6 @@ import { AuditModule } from './audit/audit.module';
 import { RedisModule } from './infra/redis/redis.module';
 import { PresenceModule } from './presence/presence.module';
 import { SessionTimeModule } from './session-time/session-time.module';
-import { TicketsModule } from './tickets/tickets.module';
 import { InboxModule } from './inbox/inbox.module';
 
 @Module({
@@ -46,7 +45,6 @@ import { InboxModule } from './inbox/inbox.module';
     AuditModule,
     PresenceModule,
     SessionTimeModule,
-    TicketsModule,
     InboxModule,
   ],
   controllers: [AppController],

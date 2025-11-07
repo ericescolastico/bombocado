@@ -114,11 +114,14 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           <SelectItem key="ALL">
             Todas
           </SelectItem>
-          <SelectItem key={ConversationStatus.OPEN}>
-            Abertas
+          <SelectItem key={ConversationStatus.AGUARDANDO}>
+            Aguardando
           </SelectItem>
-          <SelectItem key={ConversationStatus.CLOSED}>
-            Fechadas
+          <SelectItem key={ConversationStatus.EM_ATENDIMENTO}>
+            Em Atendimento
+          </SelectItem>
+          <SelectItem key={ConversationStatus.ATENDIDO}>
+            Atendido
           </SelectItem>
         </Select>
       </div>
@@ -167,12 +170,18 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   <div className="flex items-center gap-2 mt-2">
                     <span
                       className={`text-xs px-2 py-0.5 rounded ${
-                        conv.status === ConversationStatus.OPEN
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-700'
+                        conv.status === ConversationStatus.AGUARDANDO
+                          ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                          : conv.status === ConversationStatus.EM_ATENDIMENTO
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
                       }`}
                     >
-                      {conv.status === ConversationStatus.OPEN ? 'Aberta' : 'Fechada'}
+                      {conv.status === ConversationStatus.AGUARDANDO
+                        ? 'Aguardando'
+                        : conv.status === ConversationStatus.EM_ATENDIMENTO
+                        ? 'Em Atendimento'
+                        : 'Atendido'}
                     </span>
                     {conv.messagesCount !== undefined && conv.messagesCount > 0 && (
                       <span className="text-xs text-gray-500 dark:text-gray-400">
