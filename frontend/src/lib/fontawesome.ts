@@ -36,6 +36,8 @@ import {
   faInbox, // Caixa de entrada/Inbox
   faComments, // Comentários/Conversas
   faUserCog, // Configurações de usuário
+  faAddressBook, // Endereço/Endereço
+  faBars, // Barras/Menu
 } from '@fortawesome/free-solid-svg-icons';
 
 // Adicionar ícones à biblioteca
@@ -73,6 +75,8 @@ library.add(
   faInbox,
   faComments,
   faUserCog,
+  faAddressBook, 
+  faBars,
 );
 
 export { FontAwesomeIcon };

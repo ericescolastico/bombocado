@@ -11,6 +11,7 @@ import { RedisModule } from './infra/redis/redis.module';
 import { PresenceModule } from './presence/presence.module';
 import { SessionTimeModule } from './session-time/session-time.module';
 import { InboxModule } from './inbox/inbox.module';
+import { ConsumersModule } from './consumers/consumers.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { InboxModule } from './inbox/inbox.module';
     PresenceModule,
     SessionTimeModule,
     InboxModule,
+    ConsumersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

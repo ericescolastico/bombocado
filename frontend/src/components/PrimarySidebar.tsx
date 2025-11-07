@@ -48,6 +48,20 @@ const navItems: NavItem[] = [
     ]
   },
   {
+    id: 'clientes',
+    label: 'Clientes',
+    icon: <FontAwesomeIcon icon="address-book" className="w-5 h-5" />,
+    path: '/clientes',
+    children: [
+      {
+        id: 'lista-clientes',
+        label: 'Lista de Clientes',
+        icon: <FontAwesomeIcon icon="bars" className="w-4 h-4" />,
+        path: '/clientes/lista-clientes'
+      }
+    ]
+  },
+  {
     id: 'usuarios',
     label: 'Usuários',
     icon: <FontAwesomeIcon icon="users" className="w-5 h-5" />,

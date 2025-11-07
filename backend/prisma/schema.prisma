@@ -48,6 +48,14 @@ enum MessageDirection {
   OUT
 }
 
+// Document Type
+enum DocumentType {
+  CPF
+  CNPJ
+  RG
+  OUTRO
+}
+
 // User Model
 model User {
   userId        String        @id @default(uuid())
@@ -74,6 +82,7 @@ model User {
 
   auditLogs      AuditLog[]
   sessionTimes   UserSessionTime[]
+  createdConsumers Consumer[]
 
   @@map("users")
 }
@@ -161,4 +170,31 @@ model Message {
   @@index([conversationId, createdAt])
   @@index([direction])
   @@map("messages")
+}
+
+// Consumer Model
+model Consumer {
+  consumerId    String      @id @default(uuid())
+  firstName     String      @db.VarChar(255)
+  lastName      String?     @db.VarChar(255)
+  email         String?     @db.VarChar(255)
+  profileImage  String?     @db.VarChar(512)
+  address       String?     @db.VarChar(500)
+  zipcode       String?     @db.VarChar(10)
+  phone         String?     @db.VarChar(25)
+  docNumber     String?     @db.VarChar(50)
+  docType       DocumentType?
+  consumerNotes String?     @db.Text
+  createdById   String
+  createdBy     User        @relation(fields: [createdById], references: [userId])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  deletedAt     DateTime?
+
+  @@index([createdById])
+  @@index([email])
+  @@index([phone])
+  @@index([docNumber])
+  @@index([deletedAt])
+  @@map("consumers")
 }
