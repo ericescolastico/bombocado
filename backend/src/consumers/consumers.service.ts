@@ -157,6 +157,9 @@ export class ConsumersService {
       phone: consumer.phone,
       docNumber: consumer.docNumber,
       docType: consumer.docType,
+      gender: consumer.gender,
+      state: consumer.state,
+      city: consumer.city,
       consumerNotes: consumer.consumerNotes,
       createdById: consumer.createdById,
       createdBy: {

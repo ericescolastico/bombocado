@@ -1,4 +1,5 @@
 export type DocumentType = 'CPF' | 'CNPJ' | 'RG' | 'OUTRO';
+export type Gender = 'MASCULINO' | 'FEMININO' | 'OUTRO' | 'PREFIRO_NAO_INFORMAR';
 
 export interface Consumer {
   consumerId: string;
@@ -11,6 +12,9 @@ export interface Consumer {
   phone?: string;
   docNumber?: string;
   docType?: DocumentType;
+  gender?: Gender;
+  state?: string;
+  city?: string;
   consumerNotes?: string;
   createdById: string;
   createdBy: {
@@ -33,6 +37,9 @@ export interface CreateConsumerDto {
   phone?: string;
   docNumber?: string;
   docType?: DocumentType;
+  gender?: Gender;
+  state?: string;
+  city?: string;
   consumerNotes?: string;
 }
 
@@ -46,6 +53,9 @@ export interface UpdateConsumerDto {
   phone?: string;
   docNumber?: string;
   docType?: DocumentType;
+  gender?: Gender;
+  state?: string;
+  city?: string;
   consumerNotes?: string;
 }
 

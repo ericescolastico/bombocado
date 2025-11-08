@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsEmail, IsEnum } from 'class-validator';
-import { DocumentType } from '@prisma/client';
+import { DocumentType, Gender } from '@prisma/client';
 
 export class CreateConsumerDto {
   @IsString()
@@ -36,6 +36,18 @@ export class CreateConsumerDto {
   @IsOptional()
   @IsEnum(DocumentType)
   docType?: DocumentType;
+
+  @IsOptional()
+  @IsEnum(Gender)
+  gender?: Gender;
+
+  @IsOptional()
+  @IsString()
+  state?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
 
   @IsOptional()
   @IsString()
@@ -80,6 +92,18 @@ export class UpdateConsumerDto {
   docType?: DocumentType;
 
   @IsOptional()
+  @IsEnum(Gender)
+  gender?: Gender;
+
+  @IsOptional()
+  @IsString()
+  state?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
   @IsString()
   consumerNotes?: string;
 }
@@ -95,6 +119,9 @@ export class ConsumerResponseDto {
   phone?: string;
   docNumber?: string;
   docType?: DocumentType;
+  gender?: Gender;
+  state?: string;
+  city?: string;
   consumerNotes?: string;
   createdById: string;
   createdBy: {

@@ -1,0 +1,8 @@
+-- CreateEnum
+CREATE TYPE "Gender" AS ENUM ('MASCULINO', 'FEMININO', 'OUTRO', 'PREFIRO_NAO_INFORMAR');
+
+-- AlterTable
+ALTER TABLE "consumers" ADD COLUMN "gender" "Gender",
+ADD COLUMN "state" VARCHAR(100) NOT NULL DEFAULT 'Amapá',
+ADD COLUMN "city" VARCHAR(100) NOT NULL DEFAULT 'Macapá';
+

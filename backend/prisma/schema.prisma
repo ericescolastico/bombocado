@@ -56,6 +56,14 @@ enum DocumentType {
   OUTRO
 }
 
+// Gender
+enum Gender {
+  MASCULINO
+  FEMININO
+  OUTRO
+  PREFIRO_NAO_INFORMAR
+}
+
 // User Model
 model User {
   userId        String        @id @default(uuid())
@@ -184,6 +192,9 @@ model Consumer {
   phone         String?     @db.VarChar(25)
   docNumber     String?     @db.VarChar(50)
   docType       DocumentType?
+  gender        Gender?
+  state         String      @default("Amapá") @db.VarChar(100)
+  city          String      @default("Macapá") @db.VarChar(100)
   consumerNotes String?     @db.Text
   createdById   String
   createdBy     User        @relation(fields: [createdById], references: [userId])

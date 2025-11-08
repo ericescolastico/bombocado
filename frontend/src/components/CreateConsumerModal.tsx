@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, Select, SelectItem, Textarea } from '@heroui/react';
 import { api } from '@/lib/api';
 import { FontAwesomeIcon } from '@/lib/fontawesome';
-import { CreateConsumerDto, DocumentType } from '@/types/consumer';
+import { CreateConsumerDto, DocumentType, Gender } from '@/types/consumer';
 
 interface CreateConsumerModalProps {
   isOpen: boolean;
@@ -21,6 +21,9 @@ interface FormData {
   zipcode: string;
   docNumber: string;
   docType: string;
+  gender: string;
+  state: string;
+  city: string;
   consumerNotes: string;
 }
 
@@ -47,6 +50,9 @@ export const CreateConsumerModal: React.FC<CreateConsumerModalProps> = ({
     zipcode: '',
     docNumber: '',
     docType: '',
+    gender: '',
+    state: 'Amapá',
+    city: 'Macapá',
     consumerNotes: '',
   });
 
@@ -123,6 +129,9 @@ export const CreateConsumerModal: React.FC<CreateConsumerModalProps> = ({
         zipcode: formData.zipcode.trim() || undefined,
         docNumber: formData.docNumber.trim() || undefined,
         docType: formData.docType ? (formData.docType as DocumentType) : undefined,
+        gender: formData.gender ? (formData.gender as Gender) : undefined,
+        state: formData.state.trim() || 'Amapá',
+        city: formData.city.trim() || 'Macapá',
         consumerNotes: formData.consumerNotes.trim() || undefined,
       };
 
@@ -138,6 +147,9 @@ export const CreateConsumerModal: React.FC<CreateConsumerModalProps> = ({
         zipcode: '',
         docNumber: '',
         docType: '',
+        gender: '',
+        state: 'Amapá',
+        city: 'Macapá',
         consumerNotes: '',
       });
       setErrors({});
@@ -171,6 +183,9 @@ export const CreateConsumerModal: React.FC<CreateConsumerModalProps> = ({
         zipcode: '',
         docNumber: '',
         docType: '',
+        gender: '',
+        state: 'Amapá',
+        city: 'Macapá',
         consumerNotes: '',
       });
       setErrors({});
@@ -275,6 +290,45 @@ export const CreateConsumerModal: React.FC<CreateConsumerModalProps> = ({
                 errorMessage={errors.zipcode}
                 isDisabled={isLoading}
               />
+
+              {/* State */}
+              <Input
+                label="Estado"
+                placeholder="Digite o estado"
+                value={formData.state}
+                onChange={(e) => handleChange('state', e.target.value)}
+                isDisabled={isLoading}
+              />
+
+              {/* City */}
+              <Input
+                label="Cidade"
+                placeholder="Digite a cidade"
+                value={formData.city}
+                onChange={(e) => handleChange('city', e.target.value)}
+                isDisabled={isLoading}
+              />
+
+              {/* Gender */}
+              <Select
+                label="Gênero"
+                placeholder="Selecione o gênero (opcional)"
+                selectedKeys={formData.gender ? new Set([formData.gender]) : new Set()}
+                onSelectionChange={(keys) => {
+                  const selectedValue = Array.from(keys)[0] as string;
+                  if (selectedValue) {
+                    handleChange('gender', selectedValue);
+                  } else {
+                    handleChange('gender', '');
+                  }
+                }}
+                isDisabled={isLoading}
+              >
+                <SelectItem key="MASCULINO">Masculino</SelectItem>
+                <SelectItem key="FEMININO">Feminino</SelectItem>
+                <SelectItem key="OUTRO">Outro</SelectItem>
+                <SelectItem key="PREFIRO_NAO_INFORMAR">Prefiro não informar</SelectItem>
+              </Select>
 
               {/* Document Type */}
               <Select
